@@ -1,0 +1,88 @@
+
+
+-- For a similar query see:   PAY_pay_payroll_actions_2005_0208.txt
+-- For a similar query see:   ORACLE_sysadmin CCM jobs executed_7-11.txt
+-- For a similar query see:   PAY_pay_payroll_actions CCM and QUICKPAY_2005_0208.txt
+
+
+ -----Original Message-----
+From: 	Rueter, Eric  
+Sent:	Tuesday, June 15, 2004 11:29
+To:	Achilleos, Tony; Clark, Tom; Coleman, Erwin; Harris, Keltysue; Parker, Richard; Bates, Leonard; Frederick, Jay; Royal, Clayton
+Subject:	ConMan SQL
+
+To All;
+
+	Below are three SQL's that I just wrote which query the Concurrent Manager (ConMan) and produce lists of jobs that were run under ConMan.  I was thinking of sending these to the Discover Group so the end users could use them.  What I wanted to know is do you think they are of any value to the end users, and is there any more information that they might want to have?  I can produce just about anything that you can see from the "view requests" screens.  
+
+
+---  List all runs for interface %xxx%  WITH RESPONSIBILITY NAME ADDED GREATER THAN A CERTAIN DATE/TIME
+
+
+--- CCM detail query with some pay_payroll_action data      
+SELECT fcr.oracle_session_id              , fcr.request_id
+     , ppa.payroll_action_id              , fcr.phase_code
+     , flv.meaning status                 , fcpt.user_concurrent_program_name
+     , fcr.parent_request_id              , fcr.completion_text
+     , fu.user_name                     /*, fu.description owner */            
+     , resp.responsibility_name           , fcr.request_date
+     , fcr.requested_start_date           , fcr.actual_start_date
+     , fcr.actual_completion_date 
+     --, TO_CHAR(ROUND(SYSDATE) + (fcr.actual_completion_date - fcr.actual_start_date),'HH24:MI:SS') duration
+       /*
+       Because the multi-threaded processes reset the original CCM request start date (at least at 7-11 install),
+       the count is not accurate.  So, I calculate on the requested_start_date.  This is accurate if the rqst
+       actually starts when requested and does not need to wait for available processors.
+       */
+     , TO_CHAR(ROUND(SYSDATE) + (fcr.actual_completion_date - fcr.requested_start_date),'HH24:MI:SS') duration 
+FROM applsys.fnd_concurrent_requests fcr
+     , applsys.fnd_concurrent_programs_tl fcpt
+     , applsys.fnd_user fu
+     , applsys.fnd_lookup_values flv
+     , apps.fnd_responsibility_vl resp
+     , hr.pay_payroll_actions ppa
+WHERE fcr.concurrent_program_id = fcpt.concurrent_program_id
+   AND resp.responsibility_id = fcr.responsibility_id
+   AND fcr.request_id = ppa.request_id(+)
+   AND fcr.requested_by = fu.user_id
+   AND flv.lookup_code = fcr.status_code
+   AND flv.lookup_type = 'CP_STATUS_CODE'
+   AND flv.enabled_flag = 'Y' 
+   AND SYSDATE BETWEEN flv.start_date_active
+                   AND NVL(flv.end_date_active,sysdate)
+   --AND (fcr.request_id in('2887362'))
+                            /*enter a specific request id*/ 
+     --     OR fcr.parent_request_id in ('3366185')) 
+                            /*enter a specific PARENT(S) request id*/
+   AND fcr.phase_code not in ('C','R') /* C = completed; R = running; P = inactive; O = paused  */
+   --AND flv.meaning LIKE '@@%'  --- current processing status is prefaced with @@
+   --AND fu.user_name = 'LBORDE01'
+   AND fcpt.user_concurrent_program_name != 'Security List Maintenance'
+   --AND fcpt.user_concurrent_program_name != 'Payroll Worker Process'
+   --AND fcr.actual_start_date > to_date('01/25/2005 15:00:00', 'mm/dd/yyyy hh24:mi:ss') --- update comparison date
+   --AND (resp.responsibility_name like 'SLCPY%'
+   --     or resp.responsibility_name like 'SLCHR%')  --- update responsibility criteria
+ORDER BY fcr.actual_start_date, fcr.requested_start_date
+
+/*==============================================================*/
+
+/*original from Toad >> DBA >> Kill/Trace Sessions*/
+
+SELECT   /*+ RULE */
+          s.status "Status", s.serial# "Serial#", s.TYPE "Type",
+          s.username "DB User", s.osuser "Client User", s.server "Server",
+          s.machine "Machine", s.module "Module", s.client_info "Client Info",
+          s.terminal "Terminal", s.program "Program",
+          p.program "O.S. Program", s.logon_time "Connect Time",
+          lockwait "Lock Wait", si.physical_reads "Physical Reads",
+          si.block_gets "Block Gets", si.consistent_gets "Consistent Gets",
+          si.block_changes "Block Changes",
+          si.consistent_changes "Consistent Changes", s.process "Process",
+          p.spid, p.pid, si.SID, s.audsid, s.sql_address "Address",
+          s.sql_hash_value "Sql Hash", s.action,
+          SYSDATE - (s.last_call_et / 86400) "Last Call"
+    FROM v$session s, v$process p, SYS.v_$sess_io si
+   WHERE s.paddr = p.addr(+) AND si.SID(+) = s.SID
+ORDER BY 27 DESC
+
+/*==============================================================*/

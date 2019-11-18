@@ -1,0 +1,12 @@
+select * 
+from all_objects 
+where object_name like '%_API'
+  and object_type like 'PACKAGE'
+  and object_name like 'FND%'
+  
+  
+  
+  
+  
+--- once you have the package (or pkg body), look at pkg through TOAD or SQL Navigator.
+

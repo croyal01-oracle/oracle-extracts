@@ -1,0 +1,14 @@
+
+--- joins data from several views to present the settings of a certain printer
+---
+--- 
+select pv.printer_name, pv.printer_type, pv.description printer_type_desc
+      , ps.printer_style_name, ps.description printer_style_name, pi.printer_driver
+from  apps.FND_PRINTER_INFORMATION pi
+     ,apps.FND_PRINTER_VL pv
+     ,apps.FND_PRINTER_STYLES_VL ps
+where pi.printer_type = pv.printer_type
+      and ps.printer_style_name = pi.printer_style
+      and pi.printer_style like 'US%'
+
+--- Clayton Royal, 7-Eleven Account

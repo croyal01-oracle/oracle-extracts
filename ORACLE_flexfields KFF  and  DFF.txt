@@ -1,0 +1,113 @@
+
+
+
+
+ -----Original Message-----
+From: 	Rueter, Eric  
+Sent:	Thursday, June 24, 2004 11:17
+To:	Rueter, Eric; Coleman, Erwin; Clark, Tom; Parker, Richard; Harris, Keltysue; Bates, Leonard
+Cc:	Achilleos, Tony; Royal, Clayton; Frederick, Jay
+Subject:	RE: Good SQL -- v2
+
+As promised here is the DFF SQL...
+
+
+
+-----------------DFF-----------------
+-----------------DFF-----------------
+-----------------DFF-----------------
+
+
+SELECT fdf.descriptive_flexfield_name
+     , fdft.title
+     , fdf.application_table_name
+     , fdfc.global_flag
+     , fdf.context_column_name context_column
+     , fdfcu.descriptive_flex_context_code
+     , fdfcu.application_column_name
+     , fdfcu.end_user_column_name
+     , fdfcut.description column_description
+     , fdfct.descriptive_flex_context_name
+     , fdfct.description context_description
+  FROM applsys.fnd_descriptive_flexs fdf
+     , applsys.fnd_descriptive_flexs_tl fdft
+     , applsys.fnd_descr_flex_column_usages fdfcu
+     , applsys.fnd_descr_flex_col_usage_tl fdfcut
+     , applsys.fnd_descr_flex_contexts fdfc
+     , applsys.fnd_descr_flex_contexts_tl fdfct
+ WHERE fdft.application_id = fdf.application_id
+   AND fdft.descriptive_flexfield_name = fdf.descriptive_flexfield_name
+   AND fdfcu.application_id = fdf.application_id
+   AND fdfcu.descriptive_flexfield_name = fdf.descriptive_flexfield_name
+   AND fdfcut.application_id = fdf.application_id
+   AND fdfcut.descriptive_flexfield_name = fdf.descriptive_flexfield_name
+   AND fdfcut.descriptive_flex_context_code = fdfcu.descriptive_flex_context_code
+   AND fdfcut.application_column_name = fdfcu.application_column_name
+   AND fdfc.application_id = fdf.application_id
+   AND fdfc.descriptive_flexfield_name = fdf.descriptive_flexfield_name
+   AND fdfc.descriptive_flex_context_code = fdfcu.descriptive_flex_context_code
+   AND fdfct.application_id = fdf.application_id
+   AND fdfct.descriptive_flexfield_name = fdf.descriptive_flexfield_name
+   AND fdfct.descriptive_flex_context_code = fdfcu.descriptive_flex_context_code
+   AND fdfct.language = 'US'
+   AND fdfcut.language = 'US'
+   AND fdfc.enabled_flag = 'Y'
+   AND fdfcu.enabled_flag = 'Y'
+   AND fdf.application_id IN (800,801)
+   AND fdf.descriptive_flexfield_name NOT LIKE '$%'
+
+
+
+
+
+ -----Original Message-----
+From: 	Rueter, Eric  
+Sent:	Wednesday, June 23, 2004 4:50 PM
+To:	Coleman, Erwin; Clark, Tom; Parker, Richard; Harris, Keltysue; Bates, Leonard
+Cc:	Achilleos, Tony; Royal, Clayton; Frederick, Jay
+Subject:	Good SQL
+
+All,
+
+	Here is a SQL I just wrote which will give you all the KFF definitions.  Very handy when needling to write MD50 - MD70 info.  I will try to work one up for the DFFs in the next day or so.  There are a "bunch" more fields you can retrieve from the tables, but this tells you basically what SEGMENT1 is on a particular file.  Could not figure a way to only list the ones we need (i.e. only our definition of the external account numbers and not the Netherlands version)
+
+
+
+-----------------KFF-----------------
+-----------------KFF-----------------
+-----------------KFF-----------------
+
+
+SELECT fif.id_flex_name
+     , fif.description flex_description
+     , fif.application_table_name
+     , fifs.id_flex_structure_code
+--     , fifst.id_flex_code
+--     , fifst.id_flex_num
+     , fifseg.segment_name
+     , fifst.application_column_name
+     , fifst.description column_description
+  FROM applsys.fnd_id_flexs fif
+     , applsys.fnd_id_flex_structures fifs
+     , applsys.fnd_id_flex_segments fifseg
+     , applsys.fnd_id_flex_segments_tl fifst
+ WHERE fif.application_id = fifst.application_id
+   AND fif.application_id = fifs.application_id
+   AND fif.application_id = fifseg.application_id
+   AND fif.id_flex_code = fifst.id_flex_code
+   AND fif.id_flex_code = fifs.id_flex_code
+   AND fif.id_flex_code = fifseg.id_flex_code
+   AND fifs.id_flex_num = fifst.id_flex_num
+   AND fifs.id_flex_num = fifseg.id_flex_num
+   AND fifseg.application_column_name = fifst.application_column_name
+   AND fifs.enabled_flag = 'Y'
+   AND fifs.freeze_flex_definition_flag = 'Y'
+   AND fifseg.enabled_flag = 'Y'
+--   AND fif.application_id IN (801,800)
+   AND fifst.language = 'US'
+ ORDER BY fif.id_flex_name
+     , fifs.id_flex_structure_code
+     , fif.application_table_name
+     , fifseg.segment_num
+
+

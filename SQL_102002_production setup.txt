@@ -1,0 +1,109 @@
+DELETE
+FROM
+ra_batch_sources_all
+WHERE
+name like 'Tomax' AND end_date is not null
+/
+
+ deleted.
+
+select NAME, description, STATUS, START_DATE, END_DATE
+from ra_batch_sources_all
+where name like 'Tomax' AND end_date is not null
+/
+
+ws selected
+
+select NAME, description, STATUS, START_DATE, END_DATE
+from ra_batch_sources_all
+where name like 'TOMAX'
+/
+
+*******************************************
+*******************************************
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1  select invoice_enabled_flag
+  2  from mtl_system_items_b
+  3* where invoice_enabled_flag != 'Y'
+SQL> /
+
+no rows selected
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1  select invoiceable_item_flag
+  2  from mtl_system_items_b
+  3* where invoiceable_item_flag != 'Y'
+SQL> /
+
+no rows selected
+
+*******************************************
+*******************************************
+
+SQL> UPDATE
+  2  AR_RECEIVABLES_TRX_ALL
+  3  SET
+  4  status = 'I'
+  5  WHERE
+  6  NAME LIKE '&ENTER_ADJ_NAME' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+  7  /
+Enter value for enter_adj_name: Adjustment Reversal
+old   6: NAME LIKE '&ENTER_ADJ_NAME' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+new   6: NAME LIKE 'Adjustment Reversal' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+
+2 rows updated.
+
+SQL> /
+Enter value for enter_adj_name: Chargeback Adjustment
+old   6: NAME LIKE '&ENTER_ADJ_NAME' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+new   6: NAME LIKE 'Chargeback Adjustment' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+
+2 rows updated.
+
+SQL> /
+Enter value for enter_adj_name: Chargeback Reversal
+old   6: NAME LIKE '&ENTER_ADJ_NAME' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+new   6: NAME LIKE 'Chargeback Reversal' --- Adjustment Reversal  Chargeback Adjustment Chargeback Reversal
+
+2 rows updated.
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+
+*******************************************
+*******************************************
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1  UPDATE
+  2  AR_LOCKBOXES_ALL
+  3  SET
+  4  status = 'I'
+  5* WHERE status = 'A'
+SQL> /
+
+3 rows updated.
+
+SQL> select lockbox_number, status from ar_lockboxes_all;
+
+LOCKBOX_NUMBER                 S
+------------------------------ -
+ZIONS01                        I
+DIRECT_PAYMENTS                I
+DIRECT_CHECKS                  I
+DIRECT_BANKCARDS               I
+
+SQL> commit;
+
+*******************************************
+*******************************************
+

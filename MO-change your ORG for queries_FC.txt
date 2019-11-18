@@ -1,0 +1,46 @@
+--SOMETIMES QUERIES WILL RETURN NO DATA BECAUSE IT MUST BE ORG SPECIFIC 
+--TO SET AN ORG / OPERATING UNIT EXECUTE THE FOLLOWING
+--TO CHANGE THE ORG YOUR SUBSEQUENT QUERIES EXECUTE AGAINST SIMPLY EXECUTE AGAIN
+
+
+
+
+--HOW TO CHECK WHAT ORG IS SET / VERIFY WHAT ORG IS SET
+select userenv('client_info') from dual
+
+
+
+
+
+
+
+
+
+
+From: 	Chakri Adimulam      Sent:	Friday, May 17, 2002 12:03 PM
+
+
+--------------------USE WITH TOAD AND SQL*PLUS--------------------------
+exec dbms_application_info.set_client_info('101'); 
+
+
+
+
+--From Mahendar G. on 04-Jun-02
+
+-------------------- USE WITH PL/SQL DEVELOPER --------------------------
+begin 
+dbms_application_info.set_client_info('101');
+end;
+
+
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Franklin Covey account); MAY-2002.            **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment

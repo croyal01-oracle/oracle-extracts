@@ -1,0 +1,20 @@
+--select name, created db_created, controlfile_time time_of_query, log_mode from v$database;
+
+select u.user_name, u.description--, u.user_id, a.responsibility_id resp_id
+       ,bt.responsibility_name resp_name, a.start_date, a.end_date
+       --, m.menu_name, b.menu_id 
+       --, g.request_group_name, b.request_group_id
+from   apps.fnd_user_resp_groups a, apps.fnd_responsibility b, apps.fnd_responsibility_tl bt
+       ,apps.fnd_user u--, apps.fnd_menus m, apps.fnd_request_groups g
+where  a.user_id = u.user_id
+       and b.responsibility_id = bt.responsibility_id
+       --and b.menu_id = m.menu_id
+       --and b.request_group_id = g.request_group_id
+       and a.responsibility_id = b.responsibility_id
+       and a.responsibility_application_id = b.application_id
+       --and sysdate between a.start_date and nvl(a.end_date,sysdate+1)
+       and u.user_name in ( UPPER('JFrede01'), UPPER('mbala01') ,UPPER('bamuda01')
+                           ,UPPER('ajohns06'), UPPER('nreddy01'))
+order  by 
+u.user_name
+,bt.responsibility_name

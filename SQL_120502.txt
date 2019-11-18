@@ -1,0 +1,406 @@
+SELECT o.process_status_flag
+  , l.actual_ship_date
+  , L.item_number
+  , SUM(inv_amount) LINE_AMOUNT_TOTAL
+  , (x.segment1 ||'.'|| x.segment2 ||'.'|| x.segment3 ||'.'|| x.segment4 ||'.'|| L.segment5 ||'.'|| x.segment6) REV_CODE_COMBINATIONS
+  , (w.segment1 ||'.'|| w.segment2 ||'.'|| w.segment3 ||'.'|| w.segment4 ||'.'|| w.segment5 ||'.'|| w.segment6) REC_CODE_COMBINATIONS
+FROM tmp3_eds_om_order_int o
+  , (SELECT a.order_id, a.transaction_id, a.item_number, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy') actual_ship_date, V.segment5
+      , SUM(a.unit_selling_price * a.shipped_quantity) inv_amount 
+      FROM tmp3_eds_om_order_line_int a, tmp3_eds_om_order_int b, mtl_system_items_b U, gl_code_combinations V
+      WHERE a.order_id = b.order_id
+      AND a.transaction_id = b.transaction_id
+      AND U.sales_account= V.code_combination_id
+      AND a.item_number = U.segment1
+      AND U.organization_id = 101
+      AND b.process_status_flag IN ('D', 'L', 'N')
+      GROUP BY a.order_id, a.transaction_id, a.item_number, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy'), V.segment5) l 
+  , ra_cust_trx_types_all e
+  , gl_code_combinations W
+  , gl_code_combinations X
+WHERE o.process_status_flag IN ('D', 'L', 'N')
+  AND o.order_id = l.order_id
+  AND o.transaction_id = l.transaction_id
+  AND o.activity_source_code = SUBSTR(e.name,6)
+  AND e.gl_id_rec = W.code_combination_id
+  AND e.gl_id_rev = X.code_combination_id
+GROUP BY o.process_status_flag
+  , l.actual_ship_date
+  , L.item_number
+  , (x.segment1 ||'.'|| x.segment2 ||'.'|| x.segment3 || '.' || x.segment4 ||'.'|| L.segment5 ||'.'|| x.segment6)
+  , (w.segment1 ||'.'|| w.segment2 ||'.'|| w.segment3 || '.' || w.segment4 ||'.'|| w.segment5 ||'.'|| w.segment6)
+
+  
+
+---FREIGHT FROM TMP TABLES
+---FREIGHT FROM TMP TABLES
+
+SELECT o.process_status_flag
+  , l.actual_ship_date
+  , SUM(o.invoiced_shipping_total) FREIGHT_TOTAL
+  , (y.segment1 ||'.'|| y.segment2 ||'.'|| y.segment3 ||'.'|| y.segment4 ||'.'|| y.segment5 ||'.'|| y.segment6) FREIGHT_CODE_COMBINATIONS
+  , SUM(o.invoiced_tax_total) TAX_TOTAL
+  , (z.segment1 ||'.'|| z.segment2 ||'.'|| z.segment3 ||'.' || z.segment4 ||'.'|| z.segment5 ||'.'|| z.segment6) TAX_CODE_COMBINATIONS
+FROM tmp3_eds_om_order_int o
+  , (SELECT a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy') actual_ship_date
+      , SUM(a.unit_selling_price * a.shipped_quantity) inv_amount 
+      FROM tmp3_eds_om_order_line_int a, tmp3_eds_om_order_int b
+      WHERE a.order_id = b.order_id
+      AND a.transaction_id = b.transaction_id
+      AND b.process_status_flag IN ('D', 'L', 'N')
+      GROUP BY a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy')) l 
+  , ra_cust_trx_types_all e
+  , gl_code_combinations Y
+  , gl_code_combinations Z
+WHERE o.process_status_flag IN ('D', 'L', 'N')
+  AND o.order_id = l.order_id
+  AND o.transaction_id = l.transaction_id
+  AND o.activity_source_code = SUBSTR(e.name,6)
+  AND e.gl_id_freight = Y.code_combination_id
+  AND e.gl_id_tax = Z.code_combination_id
+GROUP BY o.process_status_flag
+  , l.actual_ship_date
+  , (y.segment1 ||'.'|| y.segment2 ||'.'|| y.segment3 || '.' || y.segment4 ||'.'|| y.segment5 ||'.'|| y.segment6)
+  , (z.segment1 ||'.'|| z.segment2 ||'.'|| z.segment3 || '.' || z.segment4 ||'.'|| z.segment5 ||'.'|| z.segment6)
+
+--TAX FROM TMP TABLES USING CHAKRI'S SCRIPT
+--TAX FROM TMP TABLES USING CHAKRI'S SCRIPT
+
+SELECT o.process_status_flag
+  , L.SHIP_TO_STATE
+  , l.actual_ship_date
+  , SUM(o.invoiced_shipping_total) FREIGHT_TOTAL
+  , (y.segment1 ||'.'|| y.segment2 ||'.'|| y.segment3 ||'.'|| y.segment4 ||'.'|| y.segment5 ||'.'|| y.segment6) FREIGHT_CODE_COMBINATIONS
+  , SUM(o.invoiced_tax_total) TAX_TOTAL
+  , (z.segment1 ||'.'|| z.segment2 ||'.'|| z.segment3 ||'.' || nvl(T.segment4,'0000') ||'.'|| z.segment5 ||'.'|| z.segment6) TAX_CODE_COMBINATIONS
+FROM tmp3_eds_om_order_int o
+  , (SELECT a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy') actual_ship_date
+      , A.SHIP_TO_STATE
+      , SUM(a.unit_selling_price * a.shipped_quantity) inv_amount 
+      FROM tmp3_eds_om_order_line_int a, tmp3_eds_om_order_int b
+      WHERE a.order_id = b.order_id
+      AND a.transaction_id = b.transaction_id
+      AND b.process_status_flag IN ('D', 'L', 'N')
+      GROUP BY a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy'), A.SHIP_TO_STATE) l 
+  , ra_cust_trx_types_all e
+  , gl_code_combinations Y
+  , gl_code_combinations Z
+  , AR_LOCATION_VALUES S, GL_CODE_COMBINATIONS T
+WHERE o.process_status_flag IN ('D', 'L', 'N')
+  AND o.order_id = l.order_id
+  AND o.transaction_id = l.transaction_id
+  AND o.activity_source_code = SUBSTR(e.name,6)
+  AND e.gl_id_freight = Y.code_combination_id
+  AND e.gl_id_tax = Z.code_combination_id
+  AND S.LOCATION_SEGMENT_QUALIFIER = 'STATE'
+  AND S.LOCATION_SEGMENT_ID = T.CODE_COMBINATION_ID (+)
+  AND S.LOCATION_SEGMENT_VALUE (+) =  nvl(L.SHIP_TO_STATE,'')
+  AND L.SHIP_TO_STATE IS NOT NULL
+GROUP BY o.process_status_flag
+  , L.SHIP_TO_STATE
+  , l.actual_ship_date
+  , (y.segment1 ||'.'|| y.segment2 ||'.'|| y.segment3 || '.' || y.segment4 ||'.'|| y.segment5 ||'.'|| y.segment6)
+  , (z.segment1 ||'.'|| z.segment2 ||'.'|| z.segment3 ||'.' || nvl(T.segment4,'0000') ||'.'|| z.segment5 ||'.'|| z.segment6)
+
+/***********************************************
+************************************************/
+BEGIN
+DBMS_APPLICATION_INFO.SET_CLIENT_INFO('101');
+END;
+/***********************************************
+************************************************/
+--GL INTERFACE TABLE
+--GL INTERFACE TABLE
+
+select
+  count (*)
+, substr(int.user_je_source_name, 0, 10) SOURCE
+, substr(int.USER_JE_CATEGORY_NAME, 0, 10) JE_CATEGORY
+, substr(int.reference1, 0, 10) BATCH_NAME
+, substr(int.warning_code, 0, 5) WARN_CODE
+, substr(int.status, 0, 10) STATUS
+--, substr(int.STATUS_DESCRIPTION, 0, 60) STATUS_DESCRIPTION
+, substr(int.group_id, 0, 10) GROUP_ID
+--, substr(int.period_name, 0, 10) PERIOD_NAME
+--, substr(int.date_created, 0, 10) DATE_CREATED
+--, substr(int.ACCOUNTING_DATE, 0, 10) ACCT_DATE
+--, substr(int.REFERENCE10, 0, 60) REFERENCE10
+from
+gl.gl_interface int
+--where
+--rownum<10
+group by
+  int.user_je_source_name
+, int.USER_JE_CATEGORY_NAME
+, int.reference1
+, int.warning_code
+, int.status
+--, int.STATUS_DESCRIPTION
+, int.group_id
+--, int.period_name
+--, int.date_created
+--, int.ACCOUNTING_DATE
+--, int.REFERENCE10
+
+/************************************************
+*************************************************/
+
+SELECT o.process_status_flag
+  , L.SHIP_TO_STATE
+  , l.actual_ship_date
+  , SUM(o.invoiced_shipping_total) FREIGHT_TOTAL
+  , (y.segment1 ||'.'|| y.segment2 ||'.'|| y.segment3 ||'.'|| y.segment4 ||'.'|| y.segment5 ||'.'|| y.segment6) FREIGHT_CODE_COMBINATIONS
+  , SUM(o.invoiced_tax_total) TAX_TOTAL
+  , (z.segment1 ||'.'|| z.segment2 ||'.'|| z.segment3 ||'.' || T.segment4 ||'.'|| z.segment5 ||'.'|| z.segment6) TAX_CODE_COMBINATIONS
+FROM tmp3_eds_om_order_int o
+  , (SELECT a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy') actual_ship_date
+      , A.SHIP_TO_STATE
+      , SUM(a.unit_selling_price * a.shipped_quantity) inv_amount 
+      FROM tmp3_eds_om_order_line_int a, tmp3_eds_om_order_int b
+      WHERE a.order_id = b.order_id
+      AND a.transaction_id = b.transaction_id
+      AND b.process_status_flag IN ('D', 'L', 'N')
+      GROUP BY a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy'), A.SHIP_TO_STATE) l 
+  , ra_cust_trx_types_all e
+  , gl_code_combinations Y
+  , gl_code_combinations Z
+  , AR_LOCATION_VALUES S, GL_CODE_COMBINATIONS T
+WHERE o.process_status_flag IN ('D', 'L', 'N')
+  AND o.order_id = l.order_id
+  AND o.transaction_id = l.transaction_id
+  AND o.activity_source_code = SUBSTR(e.name,6)
+  AND e.gl_id_freight = Y.code_combination_id
+  AND e.gl_id_tax = Z.code_combination_id
+  AND S.LOCATION_SEGMENT_QUALIFIER = 'STATE'
+  AND S.LOCATION_SEGMENT_ID = T.CODE_COMBINATION_ID
+  AND S.LOCATION_SEGMENT_VALUE =  L.SHIP_TO_STATE
+  AND L.SHIP_TO_STATE IS NOT NULL
+GROUP BY o.process_status_flag
+  , L.SHIP_TO_STATE
+  , l.actual_ship_date
+  , (y.segment1 ||'.'|| y.segment2 ||'.'|| y.segment3 || '.' || y.segment4 ||'.'|| y.segment5 ||'.'|| y.segment6)
+  , (z.segment1 ||'.'|| z.segment2 ||'.'|| z.segment3 || '.' || T.segment4 ||'.'|| z.segment5 ||'.'|| z.segment6);
+
+  /*************************
+  **************************/
+  
+  select count (*)
+  from frc.eds_ar_customers_int@rcom.world
+  where PROCESSED_FLAG != 'Y'
+  
+/*****************************************************/
+---RCOM EXTRACT PAYMENT LOOKUP
+select
+ORDER_NUMBER
+,CUSTOMER_NUMBER
+--,BILL_TO_CUSTOMER_ADDRESS_ID
+--,BILL_TO_CUSTOMER_ID  
+,PAYMENT_AMOUNT         
+,PAYMENT_NUMBER         
+,REFUNDED_AMOUNT        
+,REFUNDED_DATE
+,PAYMENT_METHOD_CODE
+--,PAYMENT_METHOD_DESC
+,ACCOUNT_NUMBER                   
+,CHECK_NUMBER
+,RECORD_STATUS
+,PROCESS_STATUS_FLAG
+,PROCESSED_DATE         
+,TRANSACTION_ID 
+from
+frc.eds_om_payment_int@rcom.world
+where
+order_number = '&order_number'  
+and process_status_flag not in ('S','X')
+
+/*****************************************************/
+---RCOM EXTRACT INVOICE LINES LOOKUP
+select
+h.CUSTOMER_NUMBER
+h.FULL_NAME      
+h.ORDER_NUMBER   
+h.ACTIVITY_TYPE_CODE
+
+from
+frc.eds_om_order_int@rcom.world h ---(header record of RCOM sales orders)
+frc.eds_om_order_line_int@rcom.world d  ---(lines of RCOM sales orders)
+
+
+SELECT process_status_flag, SUM(inv_amount) total_amount, COUNT(*) num_of_inv, SUM(invoiced_tax_total) tax, SUM(invoiced_shipping_total) shipping
+FROM   (SELECT o.process_status_flag
+               ,l.actual_ship_date
+               ,l.transaction_id
+               ,SUM(inv_amount) inv_amount
+               ,o.invoiced_tax_total, o.invoiced_shipping_total
+        FROM  frc.eds_om_order_int@rcom.world o,  (SELECT a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy') actual_ship_date
+                                         , SUM(a.unit_selling_price * a.shipped_quantity) inv_amount 
+	                                  FROM   frc.eds_om_order_line_int@rcom.world a, frc.eds_om_order_int@rcom.world b
+                                          WHERE  a.order_id = b.order_id
+                                          AND  a.transaction_id = b.transaction_id
+                                          AND  b.order_number ='&order_number'
+                                          GROUP BY a.order_id, a.transaction_id, TO_CHAR(a.actual_ship_date, 'mm/dd/yyyy')) l		   
+        WHERE --o.order_number ='_order_number'
+              o.order_id = l.order_id
+          AND o.transaction_id = l.transaction_id
+        GROUP BY o.process_status_flag
+          , l.actual_ship_date
+          , l.transaction_id
+          , o.invoiced_tax_total
+          , o.invoiced_shipping_total)
+GROUP BY process_status_flag
+
+select trx_number, status from ar_payment_schedules_all
+where trx_number='&invoice_number'
+
+
+/**********************************************/
+
+-- START 05-DEC-02 SQL -- START 05-DEC-02 SQL -- START 05-DEC-02 SQL
+-- START 05-DEC-02 SQL -- START 05-DEC-02 SQL -- START 05-DEC-02 SQL
+
+/**********************************************/
+
+
+--invoice extract from AR interface
+select a.interface_line_attribute1, a.interface_line_attribute2, a.interface_line_attribute3
+, a.interface_line_attribute4, a.batch_source_name, a.line_type, a.line_number, a.mtl_system_items_seg1, a.quantity
+, a.unit_selling_price, a.amount
+from ra_interface_lines_all a
+where a.batch_source_name like '%TOMAX%'
+and a.interface_line_attribute1 = '700143440'
+and a.interface_line_attribute2 = '700100000058772'
+and a.interface_line_attribute3 = '22643'
+and a.interface_line_attribute4 = '1'
+
+--invoice header extract from inside AR
+select 
+b.name invoice_source, a.trx_number invoice_num, c.account_number cust_acct_num, d.name trx_type_name
+from 
+ra_customer_trx_all a
+, ra_batch_sources_all b
+, hz_cust_accounts c
+,ra_cust_trx_types_all d
+where 
+b.name = 'TOMAX'
+and b.batch_source_id = a.batch_source_id
+and a.bill_to_customer_id=c.cust_account_id
+and a.cust_trx_type_id = d.cust_trx_type_id
+--and d.name like '%_RTL_INV_CMPL' ---INV COMPLETED AND APPROVED
+--and d.name like '%_RTL_INVOICE'---REQUIRES HOUSE ACCT REVIEW
+--and rownum<20
+
+--invoice trx type extract from invoices inside AR
+select *
+from
+ra_customer_trx_all a
+,ra_cust_trx_types_all d
+where a.cust_trx_type_id = d.cust_trx_type_id
+--and d.name like '%_RTL_INV_CMPL' ---INV COMPLETED AND APPROVED
+--and d.name like '%_RTL_INVOICE'---REQUIRES HOUSE ACCT REVIEW
+
+/**********************************************/
+--sku count(sum) on invoices inside AR by trx_date
+SELECT C.TRX_DATE, B.SEGMENT1 SKU, SUM(A.QUANTITY_INVOICED)
+FROM RA_CUSTOMER_TRX_LINES_ALL A, MTL_SYSTEM_ITEMS_B B, RA_CUSTOMER_TRX_ALL C
+WHERE B.INVENTORY_ITEM_ID = A.INVENTORY_ITEM_ID
+AND B.ORGANIZATION_ID = 101
+AND C.CUSTOMER_TRX_ID = A.CUSTOMER_TRX_ID
+AND C.BATCH_SOURCE_ID = 1043
+AND B.SEGMENT1 IN ('23942', '19079', '99036','25246', '14780', '19087', '20857', '24285')
+GROUP BY C.TRX_DATE, B.SEGMENT1
+
+/**********************************************/
+--sams club query -- list all invoices for a specific customer
+SELECT
+a.attribute1 acct_number
+,a.attribute2 sales_order
+,a.trx_number
+,a.purchase_order
+FROM
+ra_customer_trx_all a
+WHERE
+a.attribute1 = '&customer_number' ---5800211 is Sams Club
+--and a.purchase_order is not null ---remove double hyphens to query only when PO populated
+--and a.purchase_order is null ---remove double hyphens to query only when PO not populated
+GROUP BY
+a.attribute1
+,a.attribute2
+,a.trx_number
+,a.purchase_order
+ORDER BY
+a.attribute2
+
+/**********************************************/
+--list payment records on rcom extract for a specific order number
+select 
+PAYMENT_AMOUNT         
+,PAYMENT_NUMBER         
+,REFUNDED_AMOUNT        
+,REFUNDED_DATE          
+,PAYMENT_METHOD_CODE
+,PAYMENT_METHOD_DESC
+,ACCOUNT_NUMBER         
+,ROUTING_NUMBER         
+,EXPIRATION_DATE        
+,AUTHORIZATION_CODE     
+,DEPOSITED_DATE
+,CHECK_NUMBER   
+,PROCESS_STATUS_FLAG
+,PROCESSED_DATE         
+from
+frc.eds_om_payment_int@rcom.world
+where
+order_number = '30592841'
+
+/**********************************************/
+--list payment records on ar pymt interface table for a specific application
+begin 
+dbms_application_info.set_client_info('101');
+end;
+
+select *
+from AR_PAYMENTS_INTERFACE_V
+where record_type = '6'
+and invoice1 like '30592%'
+
+/**********************************************/
+
+select *
+from frc.eds_ar_cust_telephones_int@rcom.world
+where processed_flag='N'
+
+select *
+from eds_ar_cust_telephones_int_syn
+where processed_flag='N' and  ----if any are N status then no new RCOM records will be extracted
+customer_number='95512'
+
+/**********************************************/
+
+select count(*)
+from frc.eds_ar_cust_telephones_int@rcom.world--eds_ar_cust_telephones_int_syn--
+where processed_flag='N'
+
+select count(*)
+from frc.EDS_AR_CUSTOMERS_INT@rcom.world --eds_ar_cust_telephones_int_syn --
+where processed_flag ='N'--!='Y' and processed_flag !='A'
+--and customer_number='95512'
+
+select
+  count (*)
+, substr(int.user_je_source_name, 0, 10) SOURCE
+, substr(int.USER_JE_CATEGORY_NAME, 0, 10) JE_CATEGORY
+, substr(int.reference1, 0, 10) BATCH_NAME
+, substr(int.warning_code, 0, 5) WARN_CODE
+, substr(int.status, 0, 10) STATUS
+, substr(int.group_id, 0, 10) GROUP_ID
+from
+gl.gl_interface int
+group by
+  int.user_je_source_name
+, int.USER_JE_CATEGORY_NAME
+, int.reference1
+, int.warning_code
+, int.status
+, int.group_id
+
+/**********************************************/

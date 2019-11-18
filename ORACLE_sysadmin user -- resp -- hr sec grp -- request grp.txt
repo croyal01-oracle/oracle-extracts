@@ -1,0 +1,65 @@
+
+-----------------------------------------------------------------------------------
+--- will return the user_name, hr full_name, responsibility name, security_group---
+-----------------------------------------------------------------------------------
+
+
+select u.user_name, per.full_name, per.first_name||' '||per.last_name descriptio, u.start_date USER_START, u.end_date USER_END
+      , resp_tl.responsibility_name, security_tl.security_group_name
+      , resp.start_date RESP_START, resp.end_date
+from applsys.fnd_user_resp_groups urg
+   , applsys.fnd_user u 
+   , applsys.fnd_responsibility resp
+   , applsys.fnd_responsibility_tl resp_tl
+   , applsys.fnd_security_groups_tl security_tl
+   , hr.per_all_people_f per
+where u.user_id = urg.user_id
+      and urg.responsibility_id = resp.responsibility_id
+      and resp.responsibility_id = resp_tl.responsibility_id
+      and urg.security_group_id = security_tl.security_group_id
+      and per.person_id(+) = u.employee_id
+      and (resp_tl.responsibility_name like 'SLCHR%'
+           or resp_tl.responsibility_name like 'SLCPR%')
+      and resp_tl.responsibility_name not like 'SLCHR Maintenance-Canada'
+      and resp_tl.responsibility_name not like 'SLCHR Maintenance-Consolidated'
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (7-Eleven account) Feb-2004.                   **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment
+
+
+
+
+---------------------------------------------------------------
+--- will return the request group, responsibility, user_name---
+---------------------------------------------------------------
+
+select afrg.REQUEST_GROUP_NAME, afrtl.RESPONSIBILITY_NAME, afu.USER_NAME--, afu.DESCRIPTION, afm.MENU_NAME 	
+from apps.fnd_responsibility_tl afrtl	
+    ,apps.fnd_user afu	
+	,apps.FND_USER_RESP_GROUPS afurg
+    ,apps.fnd_responsibility afr	
+    ,apps.fnd_request_groups afrg	
+	,apps.fnd_menus afm
+where afr.RESPONSIBILITY_ID = afrtl.RESPONSIBILITY_ID	
+  and afu.USER_ID = afurg.USER_ID	
+  and afurg.RESPONSIBILITY_ID = afr.RESPONSIBILITY_ID	
+  and afr.MENU_ID = afm.MENU_ID	
+  and afr.REQUEST_GROUP_ID = afrg.REQUEST_GROUP_ID	
+  and (afrg.REQUEST_GROUP_NAME like 'SLCPY CA Payroll Rpts%Proceses'   or   	
+       afrg.REQUEST_GROUP_NAME like 'SLCPY Payroll Rpts % Processes'      )	
+  and afu.USER_NAME NOT IN ('CROYAL01','ECOLEM01','TCLARK01','KHARRI01','HRBTCH01','JFREDE01'	
+                           ,'JSURYA01','LBATES01','MDICKE01','RANAND01','RKULWI01','RPARKE03'								   ,'TACHIL01','ERUETE01')
+order by afrg.REQUEST_GROUP_NAME ASC, afrtl.RESPONSIBILITY_NAME ASC, afu.USER_NAME ASC		
+
+		
+
+---
+--- Clayton Royal, EDS / 7-Eleven Account   02-July-2004
+---
+

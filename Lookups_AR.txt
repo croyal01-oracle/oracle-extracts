@@ -1,0 +1,42 @@
+
+
+----find your lookup
+select OWNER, TABLE_NAME, NUM_ROWS from all_tables where table_name like '%LOOKUP%'
+
+
+----find the bank and bank branch
+select 
+  b.org_id
+, b.SET_OF_BOOKS_ID
+, b.bank_account_id
+, b.bank_account_name
+, bb.bank_branch_id
+, bb.bank_name
+, bb.bank_branch_name
+, bb.ADDRESS_LINE1
+, bb.ADDRESS_LINE2
+, bb.ADDRESS_LINE3
+, bb.ADDRESS_LINE4
+, bb.CITY  
+, bb.STATE 
+, bb.PROVINCE      
+, bb.ZIP      
+, bb.BANK_NUM  
+from AP_BANK_ACCOUNTS_ALL b,  AP_BANK_BRANCHES bb
+where b.bank_branch_id = bb.bank_branch_id
+AND bb.state is not null
+
+
+-----find the pay group and bank entry
+select * from fnd_lookup_values where lookup_type =  'PAY GROUP' AND lookup_code in ('012','013','015','021','038')
+
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (7-Eleven account); JUNE-2009                  **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment

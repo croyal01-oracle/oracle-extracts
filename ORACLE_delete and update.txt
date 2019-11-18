@@ -1,0 +1,112 @@
+
+
+do not forget to query results then, COMMIT or ROLLBACK !!!!!!!
+
+
+
+------------------- change SQL Password  ---------------------------
+
+alter user croyal01 identified by some_password
+
+
+
+------------------- UPDATE BASED ON ANOTHER VALUE ------------------
+UPDATE
+ra_interface_lines_all
+SET
+gl_date = trx_date
+WHERE
+gl_date is null
+;
+
+
+---------------------------- DATE UPDATE ---------------------------
+UPDATE
+gl_interface
+SET
+accounting_date = to_date('01/26/2003','MM/DD/YYYY')
+WHERE
+group_id = 316688
+;
+
+---------------------------- TEXT UPDATE ---------------------------
+UPDATE
+gl.gl_interface
+SET
+status = 'NEW'
+WHERE
+gl.gl_interface.user_je_source_name like'&Journal_Source'
+/
+
+update APPLSYS.FND_FLEX_VALUES
+set APPLSYS.FND_FLEX_VALUES.ATTRIBUTE2 = null
+where APPLSYS.FND_FLEX_VALUES.flex_value in ('10701', '10840', '18600')
+and APPLSYS.FND_FLEX_VALUEs.flex_value_set_id =
+(select APPLSYS.FND_FLEX_VALUE_SETS.FLEX_VALUE_SET_ID
+from APPLSYS.FND_FLEX_VALUE_SETS
+where FLEX_VALUE_SET_NAME LIKE '%KUEGL_X_AC%')
+
+
+------------------------ MULTIPLE VALUE UPDATE ---------------------
+update 
+ce_statement_headers_int_all
+set 
+  RECORD_STATUS_FLAG = null
+, CONTROL_BEGIN_BALANCE = null
+, CONTROL_TOTAL_DR = null
+, CONTROL_TOTAL_CR = null
+, CONTROL_END_BALANCE = null
+, CONTROL_DR_LINE_COUNT = null
+, CONTROL_CR_LINE_COUNT = null
+, CONTROL_LINE_COUNT = null
+where
+ce_statement_headers_int_all.BANK_ACCOUNT_NUM like'011139953'
+/
+
+
+UPDATE
+fnd_lookup_values
+SET
+enabled_flag = 'N'
+, end_date_active = '27-DEC-2001'            ---ALWAYS END DATE SYSTEM FEATURES WITH 27-DEC-(most recent year) OR TODAY'S DATE OR sysdate
+WHERE
+(lookup_type like '&enter_lkup_type'         ---ENTER THE LOOKUP TYPE NAME
+AND enabled_flag like '&y_or_n_or_wildcard'  ---ENTER Y OR N OR %
+AND start_date_active != '27-DEC-1981')      ---ALWAYS ENTER NEW LOOKUPS WITH ACTIVE_START_DATE OF 27-DEC-1981
+/
+
+
+------------------------- DELETE RECORD ------------------------
+
+DELETE
+FROM
+gl.gl_interface
+WHERE 
+gl.gl_interface.user_je_source_name like'&Journal_Source'
+
+--the above is to delete an entire row of data
+--after you confirm the correct results then type commit
+
+
+
+-------------------- COPY TABLE THEN TRUNCATE ------------------
+
+create table slc_valchko_bkup
+as select * from hrapps.slc_pyinf_valchko_stg;
+
+select count(*) from slc_valchko_bkup;   ----- validate the new table rows same as original
+
+truncate table hrapps.slc_pyinf_valchko_stg;  ---- I don't think a commit is required for truncate
+
+
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (KU account) JUL-99; (Franklin Covey) MAR-02.  **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment
+

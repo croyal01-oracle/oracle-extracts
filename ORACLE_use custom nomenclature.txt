@@ -1,0 +1,12 @@
+
+
+------------- REASONS TO CREATE/USE CUSTOM NOMENCLATURE ------------- 
+
+We need to copy any seeded/delivered workflows and responsibilities then make modifications to the copies for our needs and point the system to the copied versions.    There are several reasons for this and here are a few: 
+
+
+1) When apply patches from Oracle, any custom changes in seeded deliverables are always overlaid/lost and have to be coded.
+
+2) You have lost a baseline delivered element if you need to go back to it for any reason
+
+3) When troubleshooting issues or problems in the system sometimes Oracle support will ask you to use the seeded values to see if it works vs the custom modified one.   There are also times I use seeded/delivered tools to track down a problem and if those are modified then I have no clue if the problem is Oracle or custom fix generated.

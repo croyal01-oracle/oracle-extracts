@@ -1,0 +1,248 @@
+select * 
+from ra_interface_lines_all
+;
+
+ra_interface_lines.memo_line_name       ar_memo_lines_all_tl.name            ar_memo_lines_all_b.line_type
+FC_MEMO_TAX                             FC_MEMO_TAX                          LINE
+FC_MEMO_FREIGHT                         FC_MEMO_FREIGHT                      FREIGHT
+HEADER_LINE_FOR_ADJUSTMENT              HEADER_LINE_FOR_ADJUSTMENT           TAX
+
+select Y.name
+, X.line_type
+, Y.description
+from AR_MEMO_LINES_ALL_B X
+, AR_MEMO_LINES_ALL_TL Y
+where
+x.MEMO_LINE_ID = y.MEMO_LINE_ID
+
+select count (*) from ar_payments_interface_all;
+select count (*) from ra_interface_lines_all;
+select count (*) from ra_customers_interface_all;
+
+select count (*) from frcmo.eds_om_order_int@rcom.world;
+select count (*) from frcmo.eds_om_order_line_int@rcom.world;
+select count (*) from frcmo.eds_om_payment_int@rcom.world;
+
+select * from frcmo.eds_om_payment_int@rcom.world where order_number in ('50005868','50005872')
+
+select * from ra_customer_trx_all;
+
+select * from ra_customer_trx_lines_all where interface_line_attribute5 ='6786816';
+
+
+select * from hz_cust_accounts where customer_class_code ='QUIX';
+
+
+
+
+select * from ra_customer_trx_all;
+
+select * from ra_customer_trx_lines_all where interface_line_attribute5 ='6786816';
+
+select * from hz_cust_accounts where account_number ='9753406';
+
+select * from hz_cust_accounts where customer_class_code ='QUIX';
+
+
+select * from fccust.fcar_customer_holds where customer_number ='10002609';
+
+
+SELECT OWNER, TRIGGER_NAME, STATUS, TRIGGER_TYPE, TRIGGERING_EVENT, TABLE_NAME, WHEN_CLAUSE
+FROM ALL_TRIGGERS WHERE TRIGGER_NAME LIKE 'FCAR%HOLD%';
+
+
+select distinct LOGFILE_NODE_NAME
+from FND_CONCURRENT_REQUESTS;
+
+
+SELECT
+trx.cust_trx_type_id
+, trx.name           --- RCOM_ || the rcom activity source name
+, trx.description
+, trx.gl_id_rev
+--, trx.gl_id_freight     --- the freight on the invoice
+--, trx.gl_id_rec         --- the receivable on the invoice
+--, trx.gl_id_tax         --- the tax default acct 2400 (only if not state specific)
+--, trx.gl_id_clearing    --- the clearing acct on the invoice (NOT USED AT FC)
+--, trx.gl_id_unbilled    --- the unbilled amount on the invoice (NOT USED AT FC)
+--, trx.gl_id_unearned    --- the unearned amount on the invoice (NOT USED AT FC)
+, ccid.segment1         --- LEGAL ENTITY
+, ccid.segment2         --- SOLUTION / DIVISION
+, ccid.segment3         --- COST CENTER
+, ccid.segment4         --- ACCOUNT
+, ccid.segment5         --- PRODUCT LINE
+, ccid.segment6         --- PROJECT
+FROM
+ra_cust_trx_types_all trx    --- ORACLE TRANSACTION TYPES TABLE
+, gl_code_combinations ccid  --- ORACLE ACCOUNTING CODE SEGMENT VALUES
+WHERE
+trx.name like 'RCOM_%'       --- ALL INVOICES ORIGINATING FROM RCOM
+--trx.name like '%TOMAX%'    --- ALL INVOICES ORIGINATING FROM TOMAX
+AND trx.gl_id_rev = ccid.code_combination_id        --- ONLY ONE ID JOIN AT ONCE
+--AND trx.gl_id_freight = ccid.code_combination_id  --- ONLY ONE ID JOIN AT ONCE
+--AND trx.gl_id_rec = ccid.code_combination_id      --- ONLY ONE ID JOIN AT ONCE
+--AND trx.gl_id_tax = ccid.code_combination_id      --- ONLY ONE ID JOIN AT ONCE
+;
+
+
+
+SELECT 
+--*
+DISTINCT interface_line_attribute1 RCOM_CUSTOMER_NUMBER
+,interface_line_attribute2 RCOM_ORDER_NUM
+--interface_line_attribute3 RCOM_SHIP_RQST_NUM
+--interface_line_attribute4 RCOM_LINE_NUM
+--interface_line_attribute5 RCOM_DISTR_SPONSOR
+--interface_line_attribute6 RCOM_DISTR_NUM
+--interface_line_attribute7 RA_INTERFACE_CREATE_DATE
+FROM ra_interface_lines_all
+WHERE
+interface_line_attribute2 in 
+(50005516,50005517,50005518)
+order by
+RCOM_ORDER_NUM;
+
+
+select
+substr(SALES_ORDER,0,12) SALES_ORDER_NUM
+,LINE_NUMBER
+,LINE_TYPE
+,QUANTITY_INVOICED
+,UNIT_STANDARD_PRICE
+,EXTENDED_AMOUNT
+from RA_CUSTOMER_TRX_LINES_ALL
+WHERE
+interface_line_attribute2 like '50005485'
+ORDER BY
+LINE_NUMBER
+;
+
+select 
+substr(customer_number,0,10) cust_number
+, substr(customer_name,0,15) name
+, customer_type
+, substr(address1,0,12)address1
+, substr(city,0,10) city
+, substr(state,0,10) state
+, substr(warning_text,0,10) warning_test
+from ra_customers_interface_all
+order by
+customer_number;
+
+
+INVOICE INTERFACE TABLES
+select interface_status from ra_interface_lines_all where interface_line_attribute2='50005516';
+select * from ar_payments_interface_all;
+
+CUSTOMER INTERFACE TABLES
+select * from ra_contact_phones_int_all;
+select * from ra_customer_profiles_int_all;
+select * from ra_customers_interface_all;
+
+SELECT B.ACCOUNT_NUMBER, A.PARTY_NAME
+FROM HZ_PARTIES A, HZ_CUST_ACCOUNTS B
+WHERE A.ACCOUNT_NUMBER = 1222
+AND B.PARTY_ID = A.PARTY_ID
+AND b.account_number like '1002%';
+
+SELECT *
+FROM AP_INVOICES_ALL
+WHERE INVOICE_NUM = '090402';
+
+
+
+RCOM CUSTOMER EXTRACT TABLE
+select *
+from frcmo.eds_ar_customers_int@rcom.world  -- RCOM extract table
+where 
+cust_creation_date > sysdate-1
+--customer_number = '10002524'
+---internal_comment_text is not null
+;
+
+
+DEC CUSTOMER EXTRACT
+select *
+from fcar_cust_extract  -- DEC extract
+where
+rownum < 51
+;
+
+
+
+RCOM INVOICE EXTRACT TABLE
+select *
+from frcmo.eds_om_order_int@rcom.world  -- RCOM header extract table == frcmo.eds_om_order_int@rcom.world
+--from frcmo.eds_om_order_lines_int@rcom.world  -- RCOM lines extract table == frcmo.eds_om_lines_int@rcom.world
+where 
+order_number='50005734'
+--rownum<51
+--process_status_flag != 'Y'
+--AND record_type ='R'  -- I=invoice, R=return
+;
+
+
+
+
+select *
+from hz_cust_accounts
+where account_number = '10002525';
+
+update 
+hz_cust_accounts 
+set
+attribute_category = null
+where
+account_number = '10002525';
+
+COMMIT;
+
+SELECT DISTINCT *
+--DISTINCT interface_line_attribute1 RCOM_CUSTOMER_NUMBER
+--,interface_line_attribute2 RCOM_ORDER_NUM
+--interface_line_attribute3 RCOM_SHIP_RQST_NUM
+--interface_line_attribute4 RCOM_LINE_NUM
+--interface_line_attribute5 RCOM_DISTR_SPONSOR
+--interface_line_attribute6 RCOM_DISTR_NUM
+--interface_line_attribute7 RA_INTERFACE_CREATE_DATE
+FROM ra_interface_lines_all
+--WHERE 
+--line_type = 'TAX' OR line_type = 'FREIGHT' 
+--ship_via is not null
+--sales_order = '50005702'
+ORDER BY
+interface_line_attribute2
+;
+
+CREATE TABLE FCCUST.FCAR_TEMP_INT_LINES_0912
+AS
+SELECT * FROM AR.RA_INTERFACE_LINES_ALL;
+
+SELECT COUNT (*) FROM FCCUST.FCAR_TEMP_INT_LINES_0912;
+
+UPDATE
+RA_INTERFACE_LINES_ALL
+SET
+reference_line_context = null
+,reference_line_attribute1 = null
+,reference_line_attribute2 = null
+,reference_line_attribute3 = null
+,reference_line_attribute4 = null
+,reference_line_attribute5 = null
+,reference_line_attribute6 = null
+,reference_line_attribute7 = null
+WHERE
+reference_line_context is not null
+;
+
+commit;
+
+select *
+from frcmo.eds_om_order_int@rcom.world  -- RCOM header extract table == frcmo.eds_om_order_int@rcom.world
+--from frcmo.eds_om_order_lines_int@rcom.world  -- RCOM lines extract table == frcmo.eds_om_lines_int@rcom.world
+where 
+order_number='50005734'
+--rownum<51
+--process_status_flag != 'Y'
+--AND record_type ='R'  -- I=invoice, R=return
+;

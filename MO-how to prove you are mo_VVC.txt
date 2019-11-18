@@ -1,0 +1,63 @@
+--THIS WILL TELL IF THE SYS HAS SOME ORG SETUP BUT NEVER RUN CONVERT TO MO PROGRAM
+--THIS WILL TELL IF THE SYS HAS SOME ORG SETUP BUT NEVER RUN CONVERT TO MO PROGRAM
+
+select 
+ORG_ID, SET_OF_BOOKS_ID SOB, INVENTORY_ORGANIZATION_ID, BUSINESS_GROUP_ID
+from 
+financials_system_parameters
+
+---THIS IS THE OUTPUT FROM THE SIGECO R10.7 PROD SYSTEM
+---SQL> /
+---
+---   ORG_ID       SOB INVENTORY_ORGANIZATION_ID BUSINESS_GROUP_ID
+------------ --------- ------------------------- -----------------
+---                  1                         0                 0
+---
+---
+
+
+
+
+
+--THIS WILL TELL IF THE SYS RUN CONVERT TO MO PROGRAM
+--THIS WILL TELL IF THE SYS RUN CONVERT TO MO PROGRAM
+
+select 
+max(count(application_id))
+from
+fnd_product_installations group by application_id
+
+--SHOULD PRODUCE A COUNT OF 1 IF CONVERT TO MO PROG HAD BEEN RUN
+--AT THE SIGECO R10.7 PROD SYSTEM: ORA-00942: table or view does not exist
+
+
+
+
+
+--THIS WILL ALSO TELL IF THE SYS RUN CONVERT TO MO PROGRAM BY ORA MO MANUAL 10.7
+--THIS WILL ALSO TELL IF THE SYS RUN CONVERT TO MO PROGRAM BY ORA MO MANUAL 10.7
+
+SELECT MULTI_ORG_FLAG
+FROM APPLSYS.FND_PRODUCT_GROUPS
+
+
+
+
+
+--AGAIN, THIS WILL TELL IF THE SYS RUN CONVERT TO MO PROGRAM
+--AGAIN, THIS WILL TELL IF THE SYS RUN CONVERT TO MO PROGRAM
+
+Once you have run the ADADMIN utility option 'Convert to MultiOrg', 
+it no longer appears as a menu item on the adadmin menu. 
+
+
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Vectren account); MAY-2000.                   **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment

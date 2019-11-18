@@ -1,0 +1,342 @@
+
+
+select
+INSERT_UPDATE_FLAG
+,ORIG_SYSTEM_CUSTOMER_REF
+,ORIG_SYSTEM_ADDRESS_REF
+from
+RA_CUSTOMERS_INTERFACE_ALL
+where
+ORIG_SYSTEM_ADDRESS_REF ='RCOM_400369_11902947'
+
+RCOM_400369_11902947 == rcom record / intl ship 
+RCOM_400369_11778217 == oracle 
+
+SELECT *
+FROM HZ_CUST_ACCT_SITES
+WHERE ORIG_SYSTEM_REFERENCE LIKE 'RCOM_400369_%'
+
+select
+LAST_UPDATE_DATE
+,CREATION_DATE
+,INTERFACE_STATUS
+,INSERT_UPDATE_FLAG
+,ORIG_SYSTEM_CUSTOMER_REF
+,ORIG_SYSTEM_ADDRESS_REF
+,SITE_USE_CODE
+,PRIMARY_SITE_USE_FLAG
+from
+RA_CUSTOMERS_INTERFACE_ALL
+where
+ORIG_SYSTEM_ADDRESS_REF ='RCOM_400369_11902947'
+--INSERT_UPDATE_FLAG != 'U'
+/
+
+DELETE
+FROM
+RA_CUSTOMERS_INTERFACE_ALL
+WHERE
+LAST_UPDATE_DATE < '12-OCT-02'
+AND ORIG_SYSTEM_ADDRESS_REF ='RCOM_400369_11902947'
+
+
+UPDATE
+RA_CUSTOMERS_INTERFACE_ALL
+SET
+INSERT_UPDATE_FLAG = 'U'
+where
+ORIG_SYSTEM_ADDRESS_REF ='RCOM_400369_11902947'
+
+
+SITE_USE_CODE
+PRIMARY_SITE_USE_FLAG
+
+
+
+*****************************
+*****************************
+
+AR                             HZ_CONTACT_POINTS              ORIG_SYSTEM_REFERENCE
+AR                             HZ_CONTACT_POINT_VAL_GT        ORIG_SYSTEM_REFERENCE
+AR                             HZ_CUST_ACCOUNTS               ORIG_SYSTEM_REFERENCE
+AR                             HZ_CUST_ACCOUNT_ROLES          ORIG_SYSTEM_REFERENCE
+AR                             HZ_CUST_ACCT_SITES_ALL         ORIG_SYSTEM_REFERENCE
+AR                             HZ_CUST_SITE_USES_ALL          ORIG_SYSTEM_REFERENCE
+AR                             HZ_LOCATIONS                   ORIG_SYSTEM_REFERENCE
+AR                             HZ_LOCATION_VAL_GT             ORIG_SYSTEM_REFERENCE
+AR                             HZ_ORG_CONTACTS                ORIG_SYSTEM_REFERENCE
+AR                             HZ_ORG_CONTACT_ROLES           ORIG_SYSTEM_REFERENCE
+AR                             HZ_ORG_CONTACT_VAL_GT          ORIG_SYSTEM_REFERENCE
+AR                             HZ_PARTIES                     ORIG_SYSTEM_REFERENCE
+AR                             HZ_PARTY_INTERFACE             ORIG_SYSTEM_REFERENCE
+AR                             HZ_PARTY_SITES                 ORIG_SYSTEM_REFERENCE
+AR                             HZ_PARTY_SITE_VAL_GT           ORIG_SYSTEM_REFERENCE
+AR                             HZ_PARTY_VAL_GT                ORIG_SYSTEM_REFERENCE
+AR                             HZ_ROLE_RESPONSIBILITY         ORIG_SYSTEM_REFERENCE
+AR                             RA_ADDRESSES_ALL               ORIG_SYSTEM_REFERENCE
+AR                             RA_CONTACTS                    ORIG_SYSTEM_REFERENCE
+AR                             RA_CONTACT_ROLES               ORIG_SYSTEM_REFERENCE
+AR                             RA_CUSTOMERS                   ORIG_SYSTEM_REFERENCE
+AR                             RA_PHONES                      ORIG_SYSTEM_REFERENCE
+AR                             RA_SITE_USES_ALL               ORIG_SYSTEM_REFERENCE
+
+*****************************
+*****************************
+
+SELECT ORIG_SYSTEM_REFERENCE
+FROM &ENTER_TABLE
+--WHERE ORIG_SYSTEM_REFERENCE LIKE 'RCOM_400369_11778217'
+WHERE ORIG_SYSTEM_REFERENCE LIKE 'RCOM_400369_11902947'
+
+---success where ORIG_SYSTEM_REFERENCE LIKE 'RCOM_400369_11778217'----
+HZ_CUST_ACCT_SITES_ALL  ---1   --- complete
+HZ_CUST_SITE_USES_ALL   ---2   --- complete
+HZ_LOCATIONS        ---1   --- complete
+HZ_PARTY_SITES      ---1   --- complete
+RA_ADDRESSES_ALL    ---1   --- not compete --- non key-preserved table
+RA_SITE_USES_ALL    ---2   --- zero rows updated
+
+****************************
+****************************
+
+UPDATE
+RA_SITE_USES_ALL  ---- insert table name
+SET
+ORIG_SYSTEM_REFERENCE = 'RCOM_400369_11902947'
+where
+ORIG_SYSTEM_REFERENCE ='RCOM_400369_11778217'
+/
+
+
+
+****************************
+****************************
+
+SQL> UPDATE
+  2  RA_ADDRESSES_ALL  ---- insert table name
+  3  SET
+  4  ORIG_SYSTEM_REFERENCE = 'RCOM_400369_11902947'
+  5  where
+  6  ORIG_SYSTEM_REFERENCE ='RCOM_400369_11778217'
+  7  /
+ORIG_SYSTEM_REFERENCE = 'RCOM_400369_11902947'
+*
+ERROR at line 4:
+ORA-01779: cannot modify a column which maps to a non key-preserved table
+
+
+************************************************************************
+************************************************************************
+
+start 13-October-02
+
+************************************************************************
+**                FCAR_RCOM_INV for INTL FRT      u11i                **
+************************************************************************
+
+select
+substr(INTERFACE_LINE_CONTEXT,0,10) context
+,substr(INTERFACE_LINE_ATTRIBUTE1,0,10) cust_num
+,substr(INTERFACE_LINE_ATTRIBUTE2,0,10) sales_order
+,substr(INTERFACE_LINE_ATTRIBUTE3,0,10) ship_rqst_num
+,substr(INTERFACE_LINE_ATTRIBUTE4,0,10) line_num
+,substr(INTERFACE_LINE_ATTRIBUTE5,0,10) dist_sponsor
+,substr(INTERFACE_LINE_ATTRIBUTE6,0,10) dist_num
+,substr(INTERFACE_LINE_ATTRIBUTE7,0,10) create_date
+--,substr(INTERFACE_LINE_ATTRIBUTE8,0,10) attr8
+,amount
+,substr(MTL_SYSTEM_ITEMS_SEG1,0,12) inventory_item
+,substr(memo_line_name,0,20) memo_line_name
+from
+ra_interface_lines_all
+where
+interface_line_context = 'RCOM_INTERFACE'
+and INTERFACE_LINE_ATTRIBUTE2 in
+(
+'50008637',
+'50008639',
+'50008640',
+'50008642'
+)
+/
+
+
+
+select
+ORDER_NUMBER
+,CUSTOMER_NUMBER
+,CREATION_DATE
+,PROCESSED_DATE
+,RECORD_TYPE
+,RECORD_STATUS
+,PROCESS_STATUS_FLAG
+,PROCESSED_DATE
+from
+frcmo.eds_om_order_int@rcom.world   --- HEADER TABLE
+where
+PROCESS_STATUS_FLAG != 'Y'
+and PROCESSED_DATE is not null
+order_number in
+(
+'50008777',
+'50008778',
+'50008779',
+'50008780',
+'50008781',
+'50008782'
+)
+;
+
+
+STATUS: waiting for kent to update code change for inserting the ship ref
+for attribute3 the same as he populates when inserting the FC_MEMO_ADJUSTMENT
+dummy line for all invoices
+
+INTERIM TASK: Pamela has submitted 9 more intl frt test sales orders for shipment
+amy will ship them ----- after RCOM extract, change the PROCESS_STATUS_FLAG to 'R',
+when ready to execte change flag on 3 sales orders at a time
+
+STATUS (1:10pm): kent updated code; he re-ran existing sales order; ship rqst updated
+STATUS (1:30PM): u11i db instance is down; asked kent to move code update to tst1 
+                 we will resume testing in tst1 after a call back from kent
+
+STATUS (Mon 10/14/2002 10:44 AM): test worked well; sent e-mail to Franny to check out 
+                                  additional sales orders  (also, line ordering works
+                                  it was testing in this same batch --- used Line Ordering
+                                  Rules to resolve)
+
+*****************************************************************
+**                FCAR_RCOM_ADJ   tst1                         **
+*****************************************************************
+
+frcmo.eds_adjustments_int@rcom.world
+
+select                    
+CUSTOMER_NUMBER                
+,ORDER_NUMBER                   
+,ADJUSTMENT_REASON_CODE         
+,ADJUSTMENT_TYPE                
+,ADJUSTMENT_AMOUNT              
+,ADJUSTMENT_DATE                
+,ORIG_PAYMENT_METHOD            
+,CREATE_CREDIT_MEMO_FLAG        
+,CREDIT_MEMO_CREATION_DATE
+,CREATE_ADJUSTMENT_FLAG         
+,ADJUSTMENT_CREATION_DATE       
+,CREATE_RECEIPT_REV_FLAG        
+,RECEIPT_REV_DATE               
+,POSTED_STATUS_CODE             
+,CHECK_NUMBER                   
+,ACCOUNT_NUMBER                 
+,BILL_TO_CUSTOMER_ADDRESS_ID
+,MULTI_PAY_METHOD_FLAG          
+--,COMMENT_TEXT                   
+,CREATION_DATE                  
+,LAST_UPDATE_DATE               
+,ACTIVITY_SOURCE                
+from
+frcmo.eds_adjustments_int@rcom.world
+where
+ORDER_NUMBER in ('50007729')
+
+STATUS: waiting for concurrent managers to awake
+ACTION: i changed all work shifts in sysadmin to incl sunday
+
+STATUS: pamela completed check out and approved
+
+**********************************************************************
+**********************************************************************
+****                           14-October-02                        **
+**********************************************************************
+**********************************************************************
+
+issue: UAT #1.4
+When receiving a new account from RCOM, the accounts default
+to NEW ACCOUNT (not CORP NEW) for a corporate account and INDIVIDUAL for an 
+individual account. 9/18 The Corporate accounts are coming through correctly now 
+however the personal accounts are defaulting to New Corp no credit. They should 
+be Individual for a personal account. For example #10002608
+
+
+select
+CUSTOMER_ID
+--,COMPANY_DESC
+,CUST_INSERT_UPDATE_FLAG
+,ADDR_INSERT_UPDATE_FLAG
+,CUSTOMER_TYPE_BASE_CODE
+--, CUSTOMER_TYPE_DESC
+,CUSTOMER_STATUS_BASE_CODE
+,CUSTOMER_SHIP_METHOD_BASE_CODE
+,PROCESSED_FLAG
+,CUST_STATUS_REASON_BASE_CODE
+,CUST_STATUS_REASON_DESCRIPTION
+,COMPANY_NAME
+from
+frcmo.eds_ar_customers_int@rcom.world
+where
+rownum<5
+and CUST_STATUS_REASON_BASE_CODE is not null
+/
+
+
+******
+******
+WHENEVER THE CUSTOMER INSERT FLAG IS SET TO 'I' THERE IS A CUSTOMER_TYPE_BASE_CODE SET:
+
+select count (*) count
+from
+frcmo.eds_ar_customers_int@rcom.world
+where
+CUSTOMER_TYPE_BASE_CODE is null
+and CUST_INSERT_UPDATE_FLAG !='I'
+/
+
+******
+******
+CURRENTLY, YOUR CODE MAPS THE FOLLOWING RCOM DELIVERED CUSTOMER_TYPE_BASE_CODE 
+TO THE FOLLOWING TABLE.COLUMN
+
+ra_customers_interface_all.PERSON_FLAG = 'Y' 
+when the frcmo.eds_ar_customers_int@rcom.world.CUSTOMER_TYPE_BASE_CODE  in ('CEMP','CEMP10'
+,'CEMP20','EMP','INDIV','S20EMP','FGOVTEMP','SLGOVTEMP')
+
+******
+******
+
+THE ABOVE IS A GOOD MAPPING.
+
+******
+******
+YOUR LATEST VERSION OF THE RCOM Mapping to 11i Customer.xls SENT TO ME 14-AUG-02 HAS
+THE FOLLOWING MAPPING
+
+ra_customer_profiles_int_all
+
+IF v_person_flag = 'I' THEN
+                    v_customer_profile_class_name := 'INDIVIDUAL';
+                ELSIF RCOMCustRecord.customer_type_base_code in ('IUSE', 'INTLDO', 'INTLIC', 'INTL') THEN
+                    v_customer_profile_class_name := 'FC INTERNAL';
+                ELSE
+                    v_customer_profile_class_name := 'NEW CORP NO CREDIT'
+                END IF;('INDIVIDUAL', 'CORP')  
+
+
+******
+******
+
+THE ABOVE MAPPING DOES NOT SEEM TO WORK.  LETS CHANGE IT FROM BEING BASED ON THE PERSON_FLAG
+TO JUST BEING BASED ON THE RCOM frcmo.eds_ar_customers_int@rcom.world.CUSTOMER_TYPE_BASE_CODE
+
+******
+******
+
+MAPPING FOR OUR POPULATION OF THE RA_CUSTOMER_PROFILES_INT_ALL
+
+set ra_customer_profiles_int_all.customer_profile_class_name = 'INDIVIDUAL'
+when the frcmo.eds_ar_customers_int@rcom.world.CUSTOMER_TYPE_BASE_CODE  in ('CEMP','CEMP10'
+,'CEMP20','EMP','INDIV','S20EMP','FGOVTEMP','SLGOVTEMP')
+
+******
+******
+
+

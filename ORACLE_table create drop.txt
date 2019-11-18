@@ -1,0 +1,114 @@
+--change your sql password
+       connect user/password@domain
+       alter user croyal01 identified by some_password;
+
+
+
+
+
+
+
+--EXAMPLES OF TABLE CREATE AND TABLE DROP
+--EXAMPLES OF TABLE CREATE AND TABLE DROP
+
+
+
+ -----Original Message-----
+From: 	Chakri Adimulam  
+Sent:	Thursday, September 12, 2002 8:10 AM
+To:	Clayton Royal
+Subject:	COPY DATA TO TEMP TABLES
+
+-- ***** BEGIN -- Move Cust Int Error Rows to Temp Tables and then Move back *****
+
+
+
+---create a table with the same data as in the original table
+---if you want no data: WHERE ROWNUM < 1
+
+CREATE TABLE FCCUST.FCAR_CUSTINT_TEMP_0912
+AS
+SELECT * FROM AR.RA_CUSTOMERS_INTERFACE_ALL;
+
+
+
+---delete all data on a table
+---delete all data on a table
+
+TRUNCATE TABLE AR.RA_CUSTOMERS_INTERFACE_ALL;
+TRUNCATE TABLE AR.RA_CUSTOMER_PROFILES_INT_ALL;
+
+---copy the data in your temporary table back to the source table
+---copy the data in your temporary table back to the source table
+
+INSERT INTO AR.RA_CUSTOMERS_INTERFACE_ALL
+SELECT * FROM FCCUST.FCAR_CUSTINT_TEMP_0912;
+
+INSERT INTO AR.RA_CUSTOMER_PROFILES_INT_ALL
+SELECT * FROM FCCUST.FCAR_CUSTPROFILE_TEMP_0912;
+
+---commit your changes
+---commit your changes
+
+COMMIT;
+
+---drop the temporary table
+---drop the temporary table
+
+DROP TABLE FCCUST.FCAR_CUSTINT_TEMP_0912 CASCADE CONSTRAINTS;
+DROP TABLE FCCUST.FCAR_CUSTPROFILE_TEMP_0912 CASCADE CONSTRAINTS;
+
+
+
+-- ***** END -- Move Cust Int Error Rows to Temp Tables and then Move back *****
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Chakri Adimulam, EDS (Franklin Covey account)  SEP-02             **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment
+
+
+****************************
+****************************
+table update performed in FC tst1 on 25-sep-02
+
+CREATE TABLE FCCUST.FCAR_CUSTINT_TEMP_UAT_ISSUE4_3
+AS
+SELECT * FROM AR.RA_CUSTOMERS_INTERFACE_ALL;
+
+CREATE TABLE FCCUST.FCAR_CUSTPROFINT_UAT_ISSUE4_3
+AS
+SELECT * FROM AR.ra_customer_profiles_int_all;
+
+CREATE TABLE FCCUST.FCAR_CUSTFONEINT_UAT_ISSUE4_3
+AS
+SELECT * FROM AR.ra_contact_phones_int_all;
+
+DELETE from ra_customers_interface_all WHERE interface_status is not null; -----378---34 deleted 
+DELETE  from ra_customer_profiles_int_all WHERE interface_status is not null; -----51---7 deleted 
+DELETE  from ra_contact_phones_int_all WHERE interface_status is not null;-----476---476 detleted 
+
+****************************
+****************************
+table creation performed 27-OCT-02 to move data from gl_interface to temp for review by lynette and guy
+
+CREATE TABLE FCCUST.FCGL_AR_XFER_OPEN_INVOICES
+AS
+SELECT * FROM GL.GL_INTERFACE;
+
+---no commit necessary for create table, drop table, truncate table
+---commit required for insert, update, delete
+
+delete
+from gl.gl_interface
+where USER_JE_SOURCE_NAME = 'Receivables'
+and rownum < 50000
+
+
+INSERT INTO FCCUST.FCGL_AR_XFER_OPEN_INVOICES
+SELECT * FROM gl.gl_interface
+where USER_JE_SOURCE_NAME = 'Receivables'

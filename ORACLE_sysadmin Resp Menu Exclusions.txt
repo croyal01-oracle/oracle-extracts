@@ -1,0 +1,54 @@
+
+
+--- will prompt for a responsibility name
+--- will return the responsibility name, menu, and exclusions (both functions and menus)
+
+
+
+
+
+
+SELECT resp_tl.responsibility_name
+    , resp.start_date RESP_START
+    , resp.end_date
+    , menu_tl.user_menu_name USER_MENU_NAME
+    , func.action_id
+    , DECODE(func.rule_type,'F',form_func_tl.user_function_name,'M',menu_tl2.user_menu_name) FUNC_MENU_NAME
+FROM applsys.fnd_responsibility resp
+    , applsys.fnd_responsibility_tl resp_tl
+    , applsys.fnd_menus menu
+    , applsys.fnd_menus menu2
+    , applsys.fnd_menus_tl menu_tl
+    , applsys.fnd_menus_tl menu_tl2
+    , applsys.fnd_resp_functions func
+    , applsys.fnd_form_functions form_func
+    , applsys.fnd_form_functions_tl form_func_tl
+WHERE resp.responsibility_id = resp_tl.responsibility_id
+    AND menu.menu_id = resp.menu_id
+    AND menu.menu_id = menu_tl.menu_id
+    AND NVL(menu2.menu_id,0) = menu_tl2.menu_id(+)
+    AND func.responsibility_id = resp.responsibility_id
+    -- AND func.rule_type = 'F' -- this is when an exclusion is a Function
+    AND func.action_id = form_func.function_id 
+    AND form_func_tl.function_id = form_func.function_id
+    -- AND func.rule_type = 'M' -- this is when an exclusion is a Menu
+    AND func.action_id = menu2.menu_id(+)
+    AND (resp_tl.responsibility_name = '&responsibility_name')
+
+
+
+
+
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Eric Rueter, independent                                          **/
+--** Clayton Royal, EDS (7-Eleven account) Feb-2004.                   **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment
+
+

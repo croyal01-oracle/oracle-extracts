@@ -1,0 +1,55 @@
+SELECT 	fa.application_short_name
+		, f.form_id
+	   , f.form_name
+	   , d.application_id
+	   , d.application_table_name
+	   , d.descriptive_flexfield_name
+	   , d.title
+	   , d.form_context_prompt
+	   , coluse.descriptive_flex_context_code
+	   , coluse.application_column_name
+	   , coluse.end_user_column_name
+	   , coluse.description
+	   , context.enabled_flag
+	   , context.global_flag
+	   , context.description
+	   , context.descriptive_flex_context_name
+FROM apps.fnd_application fa
+	 , apps.FND_FORM F   
+	 , apps.FND_DESCRIPTIVE_FLEXS_vl D  
+	 , apps.fnd_descr_flex_col_usage_vl coluse
+	 , apps.fnd_descr_flex_contexts_vl context
+WHERE fa.APPLICATION_ID = F.APPLICATION_ID 
+  AND D.APPLICATION_ID = F.APPLICATION_ID 
+  AND d.application_id = coluse.application_id
+  AND d.descriptive_flexfield_name = coluse.descriptive_flexfield_name
+  AND d.application_id = context.application_id
+  AND d.descriptive_flexfield_name = context.descriptive_flexfield_name 
+  AND f.application_id = 222 -- AR  
+  	  				   /*
+					    702 -- BOM  
+					    702 -- CRP 
+					    703 -- ENG 
+					    401 -- INV 
+					    700 -- MFG 
+					    704 -- MRP  
+					    300 -- OE 
+					    275 -- PA  
+					    801 -- PAY  
+					    800 -- PER  
+					    201 -- PO  
+					    706 -- WIP  
+					    660  -- ONT  
+					    665 -- WSH
+					    722 -- MDS  
+					    260 -- CE  
+					    707 -- CST 
+						*/  
+ORDER BY f.form_name 
+	   , d.application_table_name
+	   , d.descriptive_flexfield_name 
+
+
+
+	 
+	 

@@ -1,0 +1,124 @@
+--EXTRACT FROM FND_LOOKUPS and FND_LOOKUP_TYPES by application
+--
+--************************************************************************
+--************************************************************************
+--
+--************************************************************************
+--A VERY DETAILED SQL; THIS SELECTS FROM ALL COLUMNS OF THE 3 FND LOOKUP TABLES
+--************************************************************************
+
+SELECT
+substr(a.application_short_name, 0, 6) a_appl
+--, substr(l.application_id, 0, 30) l_appl_id
+--, substr(l.lookup_type, 0, 30) l_lookup_type
+--, substr(l.customization_level, 0, 20) l_cust_level
+--, substr(l.created_by, 0, 30) l_meaning            ----- see TL table for meaning
+--, substr(l.creation_date, 0, 30) l_description
+--, substr(l.enabled_flag, 0, 1) l_enabled_flag
+--, substr(l.last_updated_by, 0, 9) l_last_updated_by
+--, substr(l.last_update_date, 0, 9) l_last_update_date
+--, substr(l.last_update_login, 0, 9) l_last_update_login
+, substr(t.lookup_type, 0, 30) t_lookup_type
+--, substr(t.security_group_id, 0, 9) t_sec_group_id
+--, substr(t.view_application_id, 0, 9) t_view_appl_id
+--, substr(t.language, 0, 9) t_lang
+--, substr(t.source_lang, 0, 9) t_source_lang
+-------, substr(t.meaning, 0, 30) t_meaning
+-------, substr(t.description, 0, 30) t_description
+--, substr(t.created_by, 0, 9) t_created_by
+--, substr(t.creation_date, 0, 9) t_creation_date
+--, substr(t.last_updated_by, 0, 9) t_last_updated_by
+--, substr(t.last_update_date, 0, 9) t_last_update_date
+--, substr(U.USER_NAME, 0, 15) t_USERNAME
+--, substr(t.last_update_login, 0, 9) t_last_update_login
+, substr(v.lookup_code, 0, 20) v_lkup_cd
+, substr(v.meaning, 0, 25) v_value_meaning
+, substr(v.description, 0, 25) v_value_desc
+, substr(v.enabled_flag, 0, 1) v_enabled_flag
+, substr(v.start_date_active, 0, 9) v_start_date
+, substr(v.end_date_active, 0, 9) v_end_date
+--, substr(v.created_by   , 0, 9) v_created_by
+, substr(v.creation_date   , 0, 9) v_creation_date
+, substr(v.last_updated_by   , 0, 9) v_last_updated_by
+, substr(U.USER_NAME, 0, 15) v_USERNAME
+--, substr(v.last_update_login   , 0, 9) v_last_update_login
+, substr(v.last_update_date   , 0, 9) v_last_update_date
+--, substr(v.source_lang   , 0, 9) v_source_lang
+--, substr(v.security_group_id   , 0, 9) v_security_group_id
+--, substr(v.view_application_id   , 0, 9) v_view_application_id
+--, substr(v.territory_code   , 0, 9) v_territory_code
+--, substr(v.attribute_category, 0, 9) v_attribute_cat
+--, substr(v.attribute1, 0, 9) v_attribute1
+--, substr(v.attribute2, 0, 9) v_attribute2
+--, substr(v.attribute3, 0, 9) v_attribute3
+--, substr(v.attribute4, 0, 9) v_attribute4
+--, substr(v.attribute5, 0, 9) v_attribute5
+--, substr(v.attribute6, 0, 9) v_attribute6
+--, substr(v.attribute7, 0, 9) v_attribute7
+--, substr(v.attribute8, 0, 9) v_attribute8
+--, substr(v.attribute9, 0, 9) v_attribute9
+--, substr(v.attribute10, 0, 9) v_attribute10
+--, substr(v.attribute11, 0, 9) v_attribute11
+--, substr(v.attribute12, 0, 9) v_attribute12
+--, substr(v.attribute13, 0, 9) v_attribute13
+--, substr(v.attribute14, 0, 9) v_attribute14
+--, substr(v.attribute15, 0, 9) v_attribute15
+--, substr(v.tag, 0, 9) v_tag
+FROM
+fnd_lookup_types l                               --------- THIS IS THE LOOKUP (read: header)
+, fnd_lookup_types_tl t                          --------- no comment
+, fnd_lookup_values v                            --------- THIS IS THE LOOKUP VALUE TABLE
+, fnd_application a
+, APPS.FND_USER_VIEW u
+WHERE
+l.lookup_type = t.lookup_type
+AND v.lookup_type = t.lookup_type
+AND l.application_id = a.application_id
+AND l.lookup_type like '&enter_lkup_type'          ---- add ampersand to 'enter_lkup_type'
+AND v.enabled_flag like '&y_or_n_or_wildcard'      ---- add ampersand to 'y_or_n_or_wildcard'
+--AND a.application_short_name like                ---- add ampersand to 'enter_appl'
+AND v.last_updated_by = U.USER_ID
+--AND (U.USER_NAME = 'CEROYA' OR U.USER_NAME like 'ADIMULAM')
+AND rownum < 15                                    ---- - REMOVE this rownum constraint
+ORDER BY
+a.application_short_name
+;
+
+
+
+--************************************************************************
+--AN OK SQL; THOUGH, IT IS BASED ON A VIEW NOT A TABLE
+--************************************************************************
+SELECT
+substr(l.lookup_type, 0, 30) lookup_type
+, substr(l.lookup_code, 0, 20) lookup_code
+, substr(l.meaning, 0, 30) meaning
+, substr(l.description, 0, 30) description
+, substr(l.enabled_flag, 0, 1) enabled_flag
+--, substr(t.application_id, 0, 10) appl_id
+, substr(a.application_short_name, 0, 6) appl
+--, substr(t.lookup_type_meaning, 0, 30) lkup_type_meaning --version 10.7 only
+, substr(t.customization_level, 0, 30) custmztn_level
+FROM
+fnd_lookups l                        -------------------- THIS IS A VIEW WITH NO CREATED BY OR CREATE DATE FIELDS!!!!!
+, fnd_lookup_types t
+, fnd_application a
+WHERE
+l.lookup_type = t.lookup_type
+AND t.application_id = a.application_id
+AND l.lookup_type like '&enter_lkup_type'
+AND l.lookup_code like '&enter_lkup_code'
+AND a.application_short_name like '&enter_appl'
+ORDER BY
+a.application_short_name
+/
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Franklin Covey account); 03-DEC-01.           **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment

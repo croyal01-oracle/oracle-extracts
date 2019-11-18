@@ -1,0 +1,211 @@
+
+------------------ UNIX: how to find a file by Chakri Adimulam -----------
+powell_applmgr> find . -name 'pyaifddf.ldt' -print
+
+
+
+------------------------ CONNECT TO A DB ---------------------------------
+connect fis_user/oracle@vdev
+
+
+---------------------- WHAT DATABASE AM I SIGNED-ON ----------------------
+select name, created, log_mode from v$database;
+
+
+---------------------- CHANGE YOUR PASSWORD ------------------------------
+alter user croyal01 identified by some_password;
+
+
+
+------------------------ TEXT FORMAT vs NUM FORMAT -----------------------
+if a column is number format, do not put single quotes; slows search
+WHERE x.amount = 12.50
+
+if a column is text format, always put single quotes; text req's quotes
+WHERE x.name = 'FC_TMX_VAL_SET'
+
+
+--------------------------- TIME AND DATE ---------------------------------
+select to_char(sysdate, 'dd-mon-yy hh:mi:ss') from dual;
+
+
+----------------------------- DATE FORMAT ---------------------------------
+select distinct sales_order from ra_interface_lines_all
+where creation_date > to_date('10/10/2002 06:00:00', 'mm/dd/yyyy hh24:mi:ss')
+            ---YOU MUST USE to_date PRIOR TO THE VALUE
+and interface_status is null;
+
+----------------------------- COUNTRY CODES -------------------------------
+select * from applsys.fnd_territories
+
+------------------------------- UPPER CASE --------------------------------
+UPPER(column_name)
+
+
+-------------------------------- COUNTS -----------------------------------
+select count (*) from apps.&where_table_is_;
+
+
+-------------------------- INFORMATIONAL ORACLE TABLES --------------------
+all_tables
+all_views
+all_tab_columns
+all_objects
+also, see file named: ORACLE_all tables and appl patch level.txt
+
+
+-------------------------- SQL*PLUS ENVIRONMENT SETTINGS-------------------
+
+set trimspool on       ----no blank characters in spool output; only sets spool format
+set trimout on         ----see above
+set echo off           ----when inserting parameters, no listing after successful pass
+set heading off        ----no column headings
+set pagesize 100
+set linesize 500
+set numwidth 25        ----by displaying the full $ amount in sql eliminated rounding errors in Excel
+rem : notes for file   ----rem : is the same as three hyphens
+set pagesize 10000
+col Account format a10 ----prefaced by col followed by column alias then format style
+col Amount format 999,999,999,999.99  ---- see above
+spool c:\acctbyrc.txt
+
+
+---------------------- Run DBMS Utility Analyze Statistics ----------------
+
+execute dbms_utility.analyze_schema ( 'GL' , 'ESTIMATE' ) ;
+--- The above line is to run against a schema (owner) group of tables
+
+analyze table <<tablename>> estimate statistics;
+--- The above line is to run against an individual table for stat update
+--- I ask Andrew Shaw, SHL to update stats held on the fnd.all_tables table
+--- He said stats are updated on the table after the table has been analyzed
+--- To analyze a table use either of the above executables
+
+
+
+--------------------------------BREAK ON LINE--------------------------------
+--- How to break (list one value followed by null in one column; listing detail in other columns) and sum
+SQL> break on report on ACCOUNT skip 3
+SQL> compute sum of JE_DEBIT on ACCOUNT on report
+SQL> compute sum of JE_CREDIT on ACCOUNT on report
+
+
+------------------------------------NOT EQUAL--------------------------------
+--the != stands for not equal in line 8 and the 
+--nvl stands means null value; we can replace nulls with zero for example
+SELECT ALL
+substr(TB.RA, 0, 3) RA,
+substr(TB.ACT, 0, 6) ACT,
+sum(nvl (OCT, 0)) OCTOBER
+FROM
+XCONV.XCONV_GL_TB_TEMP TB
+WHERE
+nvl(OCT, 0) != 0
+GROUP BY
+RA, ACT;
+
+
+---------------------------------------MINUS--------------------------------
+--- sql MINUS function: you have two selects but only display differences
+SELECT ORIG_SYSTEM_REFERENCE
+FROM HZ_PARTIES
+MINUS
+SELECT ORIG_SYSTEM_REFERENCE
+FROM RA_CUSTOMERS
+/
+
+
+------------------------- ROWNUM TO LIMIT YOUR OUTPUT-----------------------
+SELECT
+  ap_inv.INVOICE_ID, ap_dist.INVOICE_ID, ap_inv.invoice_num
+FROM
+  AP_INVOICES_ALL ap_inv,
+  AP_INVOICE_DISTRIBUTIONS_ALL ap_dist,
+  PO_HEADERS_ALL po_h,
+  PO_LINES_ALL po_l
+WHERE
+( ap_inv.INVOICE_ID=ap_dist.INVOICE_ID )
+AND  ( ap_inv.PO_HEADER_ID=po_h.PO_HEADER_ID )
+AND  ( po_l.PO_HEADER_ID=po_h.PO_HEADER_ID )
+--AND  ( ap_inv.invoice_num = '00001029' )
+and rownum < 101
+ORDER BY 3
+/
+
+---------------------------------- OUTER JOINS------------------------------
+if you want to select all the rows from table x that links to table y; but, 
+table x has some fields that are null some of the time in the field that is 
+to be used as the join criteria with table y, then use an outer join on table y.
+An outer join will list all the rows of table x matched appropriately with 
+table y.  When the table x has a null in the field that is used to join with 
+table y, then, the table x record fields will be displayed without any data 
+in the fields selected from table y.
+
+AN EXAMPLE:
+SELECT ALL
+substr(I.USER_JE_CATEGORY_NAME, 0,13) CATEGORY_NAME
+,substr(I.USER_JE_SOURCE_NAME,0,12) SOURCE_NAME
+,substr(I.STATUS,0,10) STATUS
+,substr(I.CODE_COMBINATION_ID,0,10) CCID
+,TO_CHAR (SUBSTR (I.ENTERED_DR,0,10), '999,999,999,999.99') ENTERED_DR
+,TO_CHAR (SUBSTR (I.ENTERED_CR, 0,10), '999,999,999,999.99') ENTERED_CR
+FROM
+GL.GL_INTERFACE I
+, GL.GL_CODE_COMBINATIONS CCID
+WHERE
+I.USER_JE_SOURCE_NAME LIKE 'Conversion'
+AND  (I.CODE_COMBINATION_ID = CCID.CODE_COMBINATION_ID (+))
+AND (I.CREATED_BY=U.USER_ID)
+/
+
+PROBLEM: This select statement includes gl_interface lines that have null CCID.
+SOLUTION: By placing the outer join (+) on the CCID, we require the statement 
+to return all records from gl_interface even if the CCID is null. However, when 
+CCID is not null, join with CCID table and return fields from the CCID table 
+as well as the fields from the gl_interface table.
+
+
+
+------------------------------------------ IN -----------------------------
+select 
+interface_line_id
+, inventory_item_id
+, mtl_system_items_seg1
+from 
+ra_interface_lines_all 
+where 
+interface_line_id in 
+(11210905,11210907,11210910,11210912,11210919,11210921
+,11210936,11210937,11210943,11210945,11210951,11211009) 
+order by
+interface_line_id;
+
+-------------------------------------- BETWEEN ----------------------------
+select
+count (*) count
+--a.status
+--,b.status_trx
+from
+ar_payment_schedules_all a
+,ra_customer_trx_all b
+where a.trx_number=b.trx_number
+and b.trx_number between '50001942' and '50003942'
+and a.status != 'CL'     --before update 13458 not equal
+and b.batch_source_id = '1043'   --RCOM_INTERFACE
+
+
+--Begin Comment
+--*************************************************************************/
+--*************************************************************************/
+--*****          LG&E project June-97 through August-98               *****/
+--*****        KU project September-98 through October-99             *****/
+--***** 800-Flowers.com; Ora CRM; Kellwood/Crystalize; i-Store Conf   *****/
+--*****        Vectren project 20-Mar-00 through 28-Feb-01            *****/
+--*****   OAUG-ATL panels; DFAS training; DHL proposal work; SGI      *****/
+--*****     Franklin Covey project 17-Sept-01 through 12-July-03      *****/
+--*************************************************************************/
+--*************************************************************************/
+--** Clayton Royal, EDS (VVC and FC accounts)                            **/
+--*************************************************************************/
+--*************************************************************************/
+--End Comment

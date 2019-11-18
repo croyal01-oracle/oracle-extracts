@@ -1,0 +1,55 @@
+
+----------------
+--A SQL PRIMER--
+----------------
+
+The following sql query is very basic.  However, it has the major sections
+required of most queries.  You can mimic the syntax and add and subtract fields
+that may be required by you.  Some lines, I have commented out (the script will 
+not execute those lines) with at least two dashes preceeding any text.
+
+Most sql queries will have 2-4 sections:
+
+select --- after which you list the columns you want to display in the results
+from  ---  after which you list the table(s) that the selected columns reside
+where ---  basically, these are filters or other criteria that must be met
+order by --- by which column(s) do you want to sort and what direction to sort
+
+
+
+
+select
+     CUSTOMER_NUMBER        
+     --,PARENT_CUSTOMER_NUMBER                    --- to comment out lines use 3 hyphens
+     --,DISTRIBUTOR_NUMBER
+     ,CUST_INSERT_UPDATE_FLAG
+     ,PROCESSED_DATE
+     ,INTERNAL_COMMENT_TEXT
+from
+     frcmo.eds_ar_customers_int@rcom.world        --- this is a schema.table@a_different_database
+where
+     CUSTOMER_NUMBER = '&your_customer_account'   --- the ampersand symbol will prompt the user for the parameter value
+     --CUSTOMER_NUMBER in ('10002924','10002928','10003028')
+     --and INTERNAL_COMMENT_TEXT is not null
+     --and CUST_INSERT_UPDATE_FLAG = 'I'
+     --and PROCESSED_DATE > '15-OCT-2002'
+     --and rownum < 10
+order by
+     CUSTOMER_NUMBER asc                          --- asc means ascending; desc means decending
+/
+
+
+
+
+------------------------
+- SUB - SELECT EXAMPLE -
+------------------------
+
+select pac.segment
+from PER_ANALYSIS_CRITERIA PAC
+where PAC.ANALYSIS_CRITERIA_ID IN 
+      ( select ppa.ANALYSIS_CRITERIA_ID
+        from PER_PERSON_ANALYSES PPA
+        where person_id = 1052294
+              and  ID_FLEX_NUM = 50261 )
+

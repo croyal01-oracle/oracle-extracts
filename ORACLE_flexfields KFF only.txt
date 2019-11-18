@@ -1,0 +1,45 @@
+
+ -----Original Message-----
+From: 	Rueter, Eric  
+Sent:	Wednesday, June 23, 2004 16:50
+To:	Coleman, Erwin; Clark, Tom; Parker, Richard; Harris, Keltysue; Bates, Leonard
+Cc:	Achilleos, Tony; Royal, Clayton; Frederick, Jay
+Subject:	Good SQL
+
+All,
+
+	Here is a SQL I just wrote which will give you all the KFF definitions.  Very handy when needling to write MD50 - MD70 info.  I will try to work one up for the DFFs in the next day or so.  There are a "bunch" more fields you can retrieve from the tables, but this tells you basically what SEGMENT1 is on a particular file.  Could not figure a way to only list the ones we need (i.e. only our definition of the external account numbers and not the Netherlands version)
+
+SELECT fif.id_flex_name
+     , fif.description flex_description
+     , fif.application_table_name
+     , fifs.id_flex_structure_code
+--     , fifst.id_flex_code
+--     , fifst.id_flex_num
+     , fifseg.segment_name
+     , fifst.application_column_name
+     , fifst.description column_description
+  FROM applsys.fnd_id_flexs fif
+     , applsys.fnd_id_flex_structures fifs
+     , applsys.fnd_id_flex_segments fifseg
+     , applsys.fnd_id_flex_segments_tl fifst
+ WHERE fif.application_id = fifst.application_id
+   AND fif.application_id = fifs.application_id
+   AND fif.application_id = fifseg.application_id
+   AND fif.id_flex_code = fifst.id_flex_code
+   AND fif.id_flex_code = fifs.id_flex_code
+   AND fif.id_flex_code = fifseg.id_flex_code
+   AND fifs.id_flex_num = fifst.id_flex_num
+   AND fifs.id_flex_num = fifseg.id_flex_num
+   AND fifseg.application_column_name = fifst.application_column_name
+   AND fifs.enabled_flag = 'Y'
+   AND fifs.freeze_flex_definition_flag = 'Y'
+   AND fifseg.enabled_flag = 'Y'
+--   AND fif.application_id IN (801,800)
+   AND fifst.language = 'US'
+ ORDER BY fif.id_flex_name
+     , fifs.id_flex_structure_code
+     , fif.application_table_name
+     , fifseg.segment_num
+
+

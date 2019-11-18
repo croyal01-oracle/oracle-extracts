@@ -1,0 +1,29 @@
+--LIST ALL USERS WHO HAVE LOGGED ON FOR A CERTAIN DATE
+--WILL WORK FOR DATES THAT DBA HAS NOT PURGED CCM DATA
+--Courtesy: Colorado OAUG presentation, Patch Management from Mike Swing, Trutek --http://www.coaug.org/presentations.asp.
+--the sql yeilds user name for each session per a certain date
+
+select
+substr(f.user_id,0,15) user_id,
+substr(f.session_number,0,15) SESSION_NO,
+substr(s.user_name,0,15) USER_NAME,
+substr(f.pid,0,10) PID,
+substr(f.spid,0,10) SPID
+from
+APPS.fnd_logins f, 
+APPS.fnd_signon_audit_view s
+where
+start_time like '&DD_MMM_YY'
+and f.terminal_id!='Concurrent'
+and f.user_id = s.user_id
+--and s.user_name = 'CROYAL'
+/
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Vectren account); 29-JAN-01.                  **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment

@@ -1,0 +1,104 @@
+From: Choudhary, N 
+Sent: Wednesday, January 23, 2013 13:44
+To: Royal, Clayton
+Cc: Lindberg, Kristi
+Subject: User responsibility
+
+
+
+
+
+SELECT resp_tl.responsibility_name
+    , resp.start_date RESP_START
+    , resp.end_date
+    , menu_tl.user_menu_name USER_MENU_NAME
+    , func.action_id
+    , func.rule_type
+    , DECODE(func.rule_type,'F',form_func_tl.user_function_name,'M',menu_tl2.user_menu_name) FUNC_MENU_NAME
+FROM applsys.fnd_responsibility resp
+    , applsys.fnd_responsibility_tl resp_tl
+    , applsys.fnd_menus menu
+    , applsys.fnd_menus menu2
+    , applsys.fnd_menus_tl menu_tl
+    , applsys.fnd_menus_tl menu_tl2
+    , applsys.fnd_resp_functions func
+    , applsys.fnd_form_functions form_func
+    , applsys.fnd_form_functions_tl form_func_tl
+WHERE resp.responsibility_id = resp_tl.responsibility_id
+    AND menu.menu_id = resp.menu_id
+    AND menu.menu_id = menu_tl.menu_id
+    AND NVL(menu2.menu_id,0) = menu_tl2.menu_id(+)
+    AND func.responsibility_id = resp.responsibility_id
+    -- AND func.rule_type = 'F' -- this is when an exclusion is a Function
+    AND func.action_id = form_func.function_id 
+    AND form_func_tl.function_id = form_func.function_id
+    -- AND func.rule_type = 'M' -- this is when an exclusion is a Menu
+    AND func.action_id = menu2.menu_id(+)
+    AND (resp_tl.responsibility_name in (
+             'USD Collections Agent - ALL_OUs',
+             'USD Collections Agent - ALL_LEASING',
+             'USD AR INQUIRY - ALL_OUs',
+             'USD ASC AP TRN_TM Inquiry',
+             'USD TRN_TM AP Inquiry',
+             'USD ASC AR ALL_OUs - Billing',
+             'USD ASC AR ALL_OUs - Customer Entry',
+             'USD AR INQUIRY - ALL_OUs',
+             'USD ASC AR ALL_OU- CASH'))
+
+
+
+*~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~*
+*~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~*
+*~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~*
+
+
+displays:
+	Profile, Option Level, Level Value, Profile Option Value
+
+
+SELECT 
+substr(pro1.user_profile_option_name,1,35) Profile, 
+decode(pov.level_id,
+10001,'Site',
+10002,'Application',
+10003,'Resp',
+10004,'User') Option_Level, 
+decode(pov.level_id,
+10001,'Site',
+10002,appl.application_short_name, 
+10003,resp.responsibility_name,
+10004,u.user_name) Level_Value, 
+nvl(pov.profile_option_value,'Is Null') Profile_option_Value 
+FROM  
+fnd_profile_option_values pov, 
+fnd_responsibility_tl resp, 
+fnd_application appl, 
+fnd_user u, 
+fnd_profile_options pro, 
+fnd_profile_options_tl pro1 
+WHERE
+pro.profile_option_name = pro1.profile_option_name
+and  pro.profile_option_id = pov.profile_option_id 
+and  resp.responsibility_name in (
+             'USD Collections Agent - ALL_OUs',
+             'USD Collections Agent - ALL_LEASING',
+             'USD AR INQUIRY - ALL_OUs',
+             'USD ASC AP TRN_TM Inquiry',
+             'USD TRN_TM AP Inquiry',
+             'USD ASC AR ALL_OUs - Billing',
+             'USD ASC AR ALL_OUs - Customer Entry',
+             'USD AR INQUIRY - ALL_OUs',
+             'USD ASC AR ALL_OU- CASH')
+and  pov.level_value = resp.responsibility_id (+) 
+and  pov.level_value = appl.application_id (+) 
+and  pov.level_value = u.user_id (+)
+order by 1,2,3;
+
+
+*~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~*
+*~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~*
+*~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~**~*~*~*~*~*~*~*~*~*~*~*~*
+
+Displays the security profile id and security profile name
+
+select hpsp.security_profile_id, hpsp.security_profile_name from hr.per_security_profiles hpsp

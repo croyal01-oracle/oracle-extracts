@@ -1,0 +1,23 @@
+--THIS WILL RETRIEVE THE OPERATING UNIT ID FROM A PARTIAL NAME
+--THIS WILL RETRIEVE THE OPERATING UNIT ID FROM A PARTIAL NAME
+
+
+SELECT ALL
+U.ORGANIZATION_ID, 
+U.NAME 
+FROM
+HR.HR_ORGANIZATION_UNITS U
+WHERE 
+U.NAME LIKE '%&PARTIAL_ORG_NAME_ALL_CAPS%'
+ORDER BY 
+U.ORGANIZATION_ID ASC 
+/
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Kentucky Utilites account); SUMMER-98.        **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment

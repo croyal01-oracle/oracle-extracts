@@ -1,0 +1,66 @@
+---CHECK FOR INVALID OBJECTS
+---CHECK FOR INVALID OBJECTS
+---
+---This is from Oracle MetaLink Doc ID:  Note:1072841.6 
+---Subject:  Troubleshooting Guide - FRM-40735 in the Transactions Workbench 
+---
+
+
+
+1. Check for invalid objects
+
+select object_name, object_type, owner
+from all_objects
+where status = 'INVALID';
+
+If there are invalid packages you can fix them by:
+
+SQL> alter package PackageName compile package ;
+
+For package body:
+
+SQL> alter package PackageName compile body;
+
+If there are numerous invalid objects have the customer go to AD_TOP/sql .  The Customer can run adcompsc.pls from sqlplus. The customer should sign on to sqlplus as apps.  This is how you execute the command:
+
+SQL>@adcompsc.pls
+Enter value for 1 apps
+Enter value for 2 Put in the apps password
+Enter value for 3 This is the schema that you want to compile.  
+
+It is recommended % for all schemas.  
+
+You will have to enter value for 3 like 4 times before it takes. After this completes check for invalid objects again.  If the number decreased but you still have invalid objects you can run adcompsc.pls repeatedly. Keep running adcompsc.pls until number of invalid objects stops decreasing.
+
+For objects that will not compile try the following:
+
+select text from user_source where name =
+'OBJECTNAME' and
+text like '%Header%';
+
+This script will give you the sql that creates the packages.  You can then recreate the packages.  
+
+SQL>@packageheader     
+SQL>@packagebody
+
+If recreating the package does not make the package valid you will have to analyze the user_errors table to try to determine the cause of the invalid package.
+
+Select text from user_errors where name = 'PACKAGENAME';
+
+=============
+=============
+You can also check for invalid views:
+
+select trigger_name, status, owner from all_triggers
+where (status <> 'ENABLED' and (trigger_name like 'AR%' or trigger_name like 'RA'));
+
+=============
+=============
+
+--Begin Comment
+--*************************************************************************/
+--*************************************************************************/
+--** Clayton Royal, EDS (Franklin Covey account);   06-Mar-02            **/
+--*************************************************************************/
+--*************************************************************************/
+--End Comment

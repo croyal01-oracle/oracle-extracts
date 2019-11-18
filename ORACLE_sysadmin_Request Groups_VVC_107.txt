@@ -1,0 +1,32 @@
+--Extract requests of a SysAdmin Request Group
+--This will return the reports/requests assigned to a {prompted} SysAdmin Request Group
+
+
+SELECT ALL
+substr(APPLSYS.FND_REQUEST_GROUPS.REQUEST_GROUP_NAME, 0, 30) RQ_GROUP_NAME,
+substr(APPLSYS.FND_CONCURRENT_PROGRAMS.CONCURRENT_PROGRAM_NAME, 0, 35) CCM_PROG_NAME,
+substr(APPLSYS.FND_CONCURRENT_PROGRAMS.USER_CONCURRENT_PROGRAM_NAME, 0, 70) USER_CCM_PROG_NAME,
+substr(APPLSYS.FND_APPLICATION.APPLICATION_NAME, 0, 30) APPL_NAME
+FROM
+APPLSYS.FND_REQUEST_GROUPS,
+APPLSYS.FND_REQUEST_GROUP_UNITS,
+APPLSYS.FND_CONCURRENT_PROGRAMS,
+APPLSYS.FND_APPLICATION
+WHERE
+APPLSYS.FND_REQUEST_GROUPS.REQUEST_GROUP_NAME LIKE '&enter_request_group_name'
+ AND  ((APPLSYS.FND_REQUEST_GROUPS.REQUEST_GROUP_ID=APPLSYS.FND_REQUEST_GROUP_UNITS.REQUEST_GROUP_ID)
+ AND (APPLSYS.FND_REQUEST_GROUP_UNITS.REQUEST_UNIT_ID=APPLSYS.FND_CONCURRENT_PROGRAMS.CONCURRENT_PROGRAM_ID)
+ AND (APPLSYS.FND_APPLICATION.APPLICATION_ID=APPLSYS.FND_CONCURRENT_PROGRAMS.APPLICATION_ID))
+ORDER BY
+APPLSYS.FND_CONCURRENT_PROGRAMS.USER_CONCURRENT_PROGRAM_NAME ASC
+/
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Vectren account); 20-JUN-00.                  **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment
+

@@ -1,0 +1,13 @@
+select fa.application_id
+	   , fa.application_short_name
+	   , fa.basepath
+	   , fpi.product_version
+	   , fpi.status
+	   , fpi.industry
+	   , fpi.tablespace
+	   , fpi.index_tablespace
+	   , fpi.patch_level
+from apps.FND_PRODUCT_INSTALLATIONS fpi
+   , apps.fnd_application fa
+where fa.application_id = fpi.application_id   
+order by 2

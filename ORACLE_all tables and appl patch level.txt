@@ -1,0 +1,56 @@
+
+
+----------------------------------appl patch level------------------------------
+SELECT a.application_short_name, p.PATCH_LEVEL 
+FROM FND_PRODUCT_INSTALLATIONS p, fnd_application a
+WHERE a.application_id = p.application_id
+
+------------------------------------all objects---------------------------------
+select *
+from all_objects
+where status = 'INVALID'
+
+------------------------------------all trigers---------------------------------
+select trigger_name, status, owner
+from all_triggers
+where (status <> 'ENABLED')
+
+------------------------------------all columns---------------------------------
+select *
+from all_tab_columns
+
+-------------------------------------all tables---------------------------------
+select *
+from all_tables ---or all_all_tables
+
+------------------------------------all db links--------------------------------
+select *
+from all_db_links
+
+------------------------------------all indexes---------------------------------
+select count(*)
+from all_indexes
+
+----------------------------------all db errors---------------------------------
+select *
+from all_errors
+
+----------------------------------all synonyms----------------------------------
+select *
+from all_synonyms
+
+----------------------------------all views-------------------------------------
+select *
+from all_views
+
+
+
+
+
+--Begin Comment
+--***********************************************************************/
+--***********************************************************************/
+--** Clayton Royal, EDS (Vectren account); MAY-2000.                   **/
+--***********************************************************************/
+--***********************************************************************/
+--End Comment
