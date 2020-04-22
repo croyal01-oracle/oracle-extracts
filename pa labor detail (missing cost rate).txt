@@ -1,0 +1,17 @@
+MISSING COST RATE DISTRIBUTION ERROR DETAILS (TO GIVE TO PAYROLL):
+
+select 
+	substr(hap.full_name,1,25) FULL_NAME
+	, substr(eia.expenditure_type,1.20) EXPENDITURE_TYPE
+	, eia.expenditure_item_date
+	, eia.quantity
+	, eia.raw_cost
+	, ea.expenditure_group BATCH_NAME
+from 
+	pa.pa_expenditure_items_all eia
+	, pa.pa_expenditures_all ea
+	, hr.per_all_people_f hap
+where eia.cost_dist_rejection_code = 'NO_RATE'
+	and ea.incurred_by_person_id = hap.person_id
+	and eia.expenditure_id = ea.expenditure_id
+order by hap.full_name

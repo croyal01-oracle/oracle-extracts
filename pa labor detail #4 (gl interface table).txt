@@ -1,0 +1,13 @@
+FIND BATCH NAME OF TRANSACTIONS ON GL INTERFACE TABLE:
+
+select 
+     substr(reference21,1,25) INTERFACE_BATCH_NAME
+     , sum(entered_dr) AMOUNT
+from 
+     gl.gl_interface
+where 
+     accounting_date between '01-JAN-01' and '31-JAN-01'
+     and user_je_source_name = 'Projects'
+     and user_je_category_name = 'Labor Cost'
+group by 
+     reference21

@@ -1,0 +1,20 @@
+FIND TOTAL AMOUNT OF LABOR TRANSACTIONS IN PROJECTS (BY EXP CATEGORY) THAT ARE DISTRIBUTED:
+
+
+select 
+     glcc.segment1 COMPANY,
+     et.expenditure_category EXP_CAT,
+     sum(cdl.amount) AMOUNT
+from 
+     gl.gl_code_combinations glcc
+     , pa.pa_expenditure_types et
+     , pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+where 
+     eia.system_linkage_function in ('OT', 'ST')
+     and eia.expenditure_item_date between '11-DEC-00' and '24-DEC-00'
+     and eia.expenditure_type = et.expenditure_type
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+group by glcc.segment1,
+	 et.expenditure_category

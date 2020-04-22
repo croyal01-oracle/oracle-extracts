@@ -1,0 +1,28 @@
+TRANSACTIONS IN PROJECTS FOR LABOR -- 
+CHECK PAYROLL TOTALS IN PROJECTS PRIOR TO DISTRIBUTE:
+(GROUPED BY EXP BATCH WITHIN PAYROLL)
+
+
+select count(*)
+     , substr(hrp.payroll_name,1,30) PAYROLL
+     , substr(ea.expenditure_group,1,25) EXP_BATCH
+     , sum(eia.raw_cost) RAW_COST
+     , substr(ea.expenditure_status_code,1,10) STATUS
+from pa.pa_expenditure_types et
+     , pa.pa_expenditures_all ea
+     , pa.pa_expenditure_items_all eia
+     , hr.per_all_assignments_f paaf
+     , hr.pay_all_payrolls_f hrp
+where ea.expenditure_ending_date in ('31-DEC-00', '07-JAN-01')
+     and et.expenditure_category != 'INDIRECT'
+     and eia.system_linkage_function in ('ST', 'OT')
+     and eia.cost_distributed_flag = 'N'
+     and eia.expenditure_item_date between
+          paaf.effective_start_date and paaf.effective_end_date
+     and hrp.payroll_id = paaf.payroll_id
+     and paaf.person_id = ea.incurred_by_person_id
+     and eia.expenditure_type = et.expenditure_type
+     and eia.expenditure_id = ea.expenditure_id
+group by hrp.payroll_name
+     , ea.expenditure_group
+     , ea.expenditure_status_code

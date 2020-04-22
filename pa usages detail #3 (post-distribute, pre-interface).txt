@@ -1,0 +1,27 @@
+FIND TOTAL AMOUNT OF USAGES TRANSACTIONS IN PROJECTS 
+BY EXP GROUP, EXP CATEGORY, EXP END DATE THAT ARE DISTRIBUTED, BUT NOT YET INTERFACED:
+
+
+select 
+     substr(glcc.segment1,1,7) COMPANY
+     , substr(ea.expenditure_group,1,15) EXP_GROUP
+     , substr(et.expenditure_category,1,20) EXP_CAT
+     , sum(cdl.amount) AMOUNT
+from 
+     gl.gl_code_combinations glcc
+     , pa.pa_expenditure_types et
+     , pa.pa_expenditures_all ea
+     , pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+where 
+     eia.system_linkage_function in ('USG', 'PJ')
+     and cdl.pa_date = 'JAN-01'
+     and cdl.transfer_status_code != 'A'
+     and eia.expenditure_type = et.expenditure_type
+     and ea.expenditure_id = eia.expenditure_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+group by 
+     glcc.segment1
+     , ea.expenditure_group
+     , et.expenditure_category

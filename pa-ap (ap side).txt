@@ -1,0 +1,69 @@
+PROJECT-RELATED TRANSACTIONS IN ACCOUNTS PAYABLE:
+
+select substr(glcc.segment1,1,8) COMPANY,
+     substr(api.invoice_type_lookup_code,1,17) INVOICE_TYPE,
+     DECODE (api.invoice_type_lookup_code
+    	, 'EXPENSE REPORT', substr(api.invoice_num,1,23)
+	, null)	INTERFACE_BATCH_NAME,
+     count(*),
+     sum(apd.amount) AMOUNT
+from ap.ap_invoices_all api,
+     ap.ap_invoice_distributions_all apd,
+     gl.gl_code_combinations glcc
+where apd.period_name = 'JAN-01'
+     and apd.posted_flag = 'Y'
+     and (apd.pa_addition_flag in ('Y', 'T')
+     or api.invoice_type_lookup_code = 'EXPENSE REPORT')
+     and api.invoice_id = apd.invoice_id
+     and apd.dist_code_combination_id = glcc.code_combination_id
+group by glcc.segment1,
+     api.invoice_type_lookup_code,
+     api.invoice_num
+order by glcc.segment1,
+     api.invoice_type_lookup_code,
+     api.invoice_num
+
+
+
+PROJECT-RELATED TRANSACTIONS SUMMED BY INVOICE TYPE:
+
+select 
+     substr(api.invoice_type_lookup_code,1,17) INVOICE_TYPE,
+     sum(apd.amount) AMOUNT
+from ap.ap_invoices_all api,
+     ap.ap_invoice_distributions_all apd,
+     gl.gl_code_combinations glcc
+where apd.period_name = 'JAN-01'
+     and apd.posted_flag = 'Y'
+     and (apd.pa_addition_flag in ('Y', 'T')
+     or api.invoice_type_lookup_code = 'EXPENSE REPORT')
+     and api.invoice_id = apd.invoice_id
+     and apd.dist_code_combination_id = glcc.code_combination_id
+group by api.invoice_type_lookup_code
+
+
+
+REMAINING TRANSACTIONS IN ACCOUNTS PAYABLE:
+
+select substr(invoice_type_lookup_code,1,17) INVOICE_TYPE,
+     count(*),
+     substr(c.segment1,1,8) COMPANY,
+     sum(amount) AMOUNT,
+     substr(b.project_accounting_context,1,8) CONTEXT,
+     pa_addition_flag PA_ADDED
+from ap.ap_invoices_all a,
+     ap.ap_invoice_distributions_all b,
+     gl.gl_code_combinations c
+where b.period_name = '&period_name'
+     and posted_flag = 'Y'
+     and b.pa_addition_flag not in ('Y', 'T')
+     and invoice_type_lookup_code != 'EXPENSE REPORT'
+     and a.invoice_id = b.invoice_id
+     and b.dist_code_combination_id = c.code_combination_id
+group by invoice_type_lookup_code,
+     c.segment1,
+     b.project_accounting_context,
+     pa_addition_flag
+order by invoice_type_lookup_code,
+     c.segment1,
+     pa_addition_flag

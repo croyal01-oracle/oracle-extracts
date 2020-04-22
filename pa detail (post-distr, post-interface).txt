@@ -1,0 +1,14 @@
+FIND TOTAL AMOUNT OF TRANSACTIONS IN PROJECTS THAT ARE DISTRIBUTED
+
+
+select sum(amount), batch_name
+from pa.pa_cost_distribution_lines_all cdl,
+	pa.pa_expenditure_items_all exp
+where transfer_status_code||'' = 'A'
+	and exp.system_linkage_function = '&sys_link'
+--OT
+--ST
+--USG
+	and exp.expenditure_item_date between '01-JAN-01' and '31-JAN-01'
+	and cdl.expenditure_item_id = exp.expenditure_item_id
+group by batch_name

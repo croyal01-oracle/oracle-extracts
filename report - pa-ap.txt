@@ -1,0 +1,86 @@
+CREATE OR REPLACE VIEW XPA_PA_AP_COMPARE_V AS 
+(
+select 
+     'PA' SOURCE
+     , substr(cdl.batch_name,1,30) INTERFACE_BATCH_NAME
+     , DECODE(eia.system_linkage_function
+	, 'PJ', 'Miscellaneous Transaction'
+	, 'BTC', 'Burden Cost'
+	, 'USG', 'Usage Cost'
+	, 'OT', 'Labor Cost'
+	, 'ST', 'Labor Cost'
+	, 'ER', 'Expense Report'
+	, 'VI', 'Standard'
+	, 'NONE')
+	SYS_LINK
+     , cdl.dr_code_combination_id CCID
+     , substr(glcc.segment1,1,2) RE
+     , substr(glcc.segment2,1,4) PROD
+     , substr(glcc.segment3,1,8) COST_CTR
+     , substr(glcc.segment4,1,8) ACCOUNT
+     , substr(glcc.segment5,1,6) FUTURE
+     , (cdl.burdened_cost) AMOUNT
+from 
+     pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+     , gl.gl_code_combinations glcc
+where gl_date between '01-JAN-01' and '31-JAN-01'
+     and cdl.transfer_status_code in ('A', 'T', 'V')
+     and eia.system_linkage_function in ('ER', 'VI')
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+UNION ALL
+select 
+     'AP' SOURCE
+     , DECODE (invoice_type_lookup_code
+	, 'EXPENSE REPORT', substr(api.invoice_num,1,23)
+	, null)
+	INTERFACE_BATCH_NAME
+     , DECODE (api.invoice_type_lookup_code
+	, 'EXPENSE REPORT', 'Expense Report'
+	, 'Standard')
+	SYS_LINK
+     , apd.dist_code_combination_id CCID
+     , substr(glcc.segment1,1,2) RE
+     , substr(glcc.segment2,1,4) PROD
+     , substr(glcc.segment3,1,8) COST_CTR
+     , substr(glcc.segment4,1,8) ACCOUNT
+     , substr(glcc.segment5,1,6) FUTURE
+     , (apd.amount) AMOUNT
+from 
+     ap.ap_invoices_all api
+     , ap.ap_invoice_distributions_all apd
+     , gl.gl_code_combinations glcc
+where 
+     apd.period_name = 'JAN-01'
+     and apd.posted_flag = 'Y'
+     and (apd.pa_addition_flag in ('Y', 'T')
+     or api.invoice_type_lookup_code = 'EXPENSE REPORT')
+     and api.invoice_id = apd.invoice_id
+     and apd.dist_code_combination_id = glcc.code_combination_id
+)
+
+
+desc xpa_pa_ap_compare_v
+
+select sys_link, interface_batch_name, ccid, 
+     RE||'-'||
+     PROD||'-'||
+     COST_CTR||'-'||
+     ACCOUNT||'-'||
+     FUTURE CODE_COMBINATION,
+	sum(DECODE(source
+	, 'PA', nvl(amount,0),0)) PA_AMOUNT,
+	sum(DECODE(source
+	, 'AP', nvl(amount,0),0)) AP_AMOUNT,
+	(sum(DECODE(source
+	, 'PA', nvl(amount,0),0))) - 
+	(sum(DECODE(source
+	, 'AP', nvl(amount,0),0))) OUT_OF_BALANCE	
+from xpa_pa_ap_compare_v
+group by sys_link, interface_batch_name, ccid,
+     RE||'-'||
+     PROD||'-'||
+     COST_CTR||'-'||
+     ACCOUNT||'-'||
+     FUTURE

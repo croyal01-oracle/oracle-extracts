@@ -1,0 +1,20 @@
+TRANSACTIONS IN PROJECTS BY SYSTEM LINKAGE AND INTERFACE BATCH NAME:
+
+select substr(glcc.segment1,1,8) COMPANY,
+     substr(eia.system_linkage_function,1,14) SYS_LINK,
+     substr(cdl.batch_name,1,30) INTERFACE_BATCH_NAME,
+     sum(cdl.burdened_cost) BURDENED_COST
+from pa.pa_expenditure_items_all eia,
+     pa.pa_cost_distribution_lines_all cdl,
+     gl.gl_code_combinations glcc
+where cdl.gl_date between '01-JAN-01' and '31-JAN-01'
+     and cdl.transfer_status_code = 'A'
+     and eia.system_linkage_function in ('ST', 'USG', 'OT', 'BTC', 'PJ')
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+group by glcc.segment1, 
+     eia.system_linkage_function,
+     cdl.batch_name
+order by glcc.segment1, 
+     eia.system_linkage_function,
+     cdl.batch_name

@@ -1,0 +1,112 @@
+CREATE OR REPLACE VIEW XPA_PA_GL_COMPARE_V AS 
+((
+select 
+     'PA' SOURCE
+     , DECODE(eia.system_linkage_function
+	, 'PJ', 'Miscellaneous Transaction'
+	, 'BTC', 'Burden Cost'
+	, 'USG', 'Usage Cost'
+	, 'OT', 'Labor Cost'
+	, 'ST', 'Labor Cost'
+	, 'ER', 'Expense Report'
+	, 'VI', 'Standard'
+	, 'NONE')
+	SYS_LINK
+     , cdl.dr_code_combination_id CCID
+     , substr(glcc.segment1,1,2) RE
+     , substr(glcc.segment2,1,4) PROD
+     , substr(glcc.segment3,1,8) COST_CTR
+     , substr(glcc.segment4,1,8) ACCOUNT
+     , substr(glcc.segment5,1,6) FUTURE
+     , (cdl.burdened_cost) DR_AMOUNT
+     , 0 CR_AMOUNT
+     , 0 AMOUNT
+from 
+     pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+     , gl.gl_code_combinations glcc
+where gl_date between '01-JAN-01' and '31-JAN-01'
+     and cdl.transfer_status_code in ('A', 'T', 'V')
+     and eia.system_linkage_function in ('ST', 'OT', 'USG', 'BTC', 'PJ')
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+UNION ALL
+select 
+     'PA' SOURCE
+     , DECODE(eia.system_linkage_function
+	, 'PJ', 'Miscellaneous Transaction'
+	, 'BTC', 'Burden Cost'
+	, 'USG', 'Usage Cost'
+	, 'OT', 'Labor Cost'
+	, 'ST', 'Labor Cost'
+	, 'ER', 'Expense Report'
+	, 'VI', 'Standard'
+	, 'NONE')
+	SYS_LINK
+     , cdl.cr_code_combination_id CCID
+     , substr(glcc.segment1,1,2) RE
+     , substr(glcc.segment2,1,4) PROD
+     , substr(glcc.segment3,1,8) COST_CTR
+     , substr(glcc.segment4,1,8) ACCOUNT
+     , substr(glcc.segment5,1,6) FUTURE
+     , 0 DR_AMOUNT
+     , (cdl.burdened_cost) CR_AMOUNT
+     , 0 AMOUNT
+from 
+     pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+     , gl.gl_code_combinations glcc
+where gl_date between '01-JAN-01' and '31-JAN-01'
+     and cdl.transfer_status_code in ('A', 'T', 'V')
+     and eia.system_linkage_function in ('ST', 'OT', 'USG', 'BTC', 'PJ')
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.cr_code_combination_id = glcc.code_combination_id
+)
+UNION ALL
+select 
+     'GL' SOURCE
+     , glh.je_category SYS_LINK
+     , gll.code_combination_id CCID
+     , substr(glcc.segment1,1,2) RE
+     , substr(glcc.segment2,1,4) PROD
+     , substr(glcc.segment3,1,8) COST_CTR
+     , substr(glcc.segment4,1,8) ACCOUNT
+     , substr(glcc.segment5,1,6) FUTURE
+     , 0 DR_AMOUNT
+     , 0 CR_AMOUNT
+     , nvl(gll.entered_dr,0) - nvl(gll.entered_cr,0) AMOUNT
+from 
+     gl.gl_je_headers glh
+     , gl.gl_je_lines gll
+     , gl.gl_code_combinations glcc
+where 
+     glh.period_name = 'JAN-01'
+     and glh.je_source = 'Project Accounting'
+     and glcc.segment4 != '1223300'
+     and glh.je_header_id = gll.je_header_id
+     and gll.code_combination_id = glcc.code_combination_id
+)
+
+desc xpa_pa_gl_compare_v
+
+select sys_link, ccid, 
+     RE||'-'||
+     PROD||'-'||
+     COST_CTR||'-'||
+     ACCOUNT||'-'||
+     FUTURE CODE_COMBINATION,
+	sum(DECODE(source
+	, 'PA', nvl(DR_AMOUNT - CR_AMOUNT,0),0)) PA_AMOUNT,
+	sum(DECODE(source
+	, 'GL', nvl(amount,0),0)) GL_AMOUNT,
+	(sum(DECODE(source
+	, 'PA', nvl(DR_AMOUNT - CR_AMOUNT,0),0)) - 
+	(sum(DECODE(source
+	, 'GL', nvl(amount,0),0)))) OUT_OF_BALANCE	
+from xpa_pa_gl_compare_v
+group by sys_link, ccid,
+	 RE||'-'||
+     PROD||'-'||
+     COST_CTR||'-'||
+     ACCOUNT||'-'||
+     FUTURE

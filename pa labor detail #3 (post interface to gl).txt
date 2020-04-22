@@ -1,0 +1,21 @@
+FIND TRANSACTIONS IN PROJECTS SENT TO GL, GROUPED BY BATCH NAME, STATUS, EXP GROUP:
+
+select 
+     cdl.batch_name INTERFACE_BATCH_NAME
+     , ea.expenditure_group EXP_BATCH
+     , sum(cdl.amount) AMOUNT
+from 
+     pa.pa_expenditure_items_all eia
+     , pa.pa_expenditures_all ea
+     , pa.pa_cost_distribution_lines_all cdl
+where 
+     cdl.gl_date between '01-JAN-01' and '31-JAN-01'
+     and cdl.transfer_status_code = 'A'
+     and eia.system_linkage_function in ('ST', 'OT')
+     and eia.expenditure_id = ea.expenditure_id
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+group by 
+     cdl.batch_name
+     , ea.expenditure_group
+
+

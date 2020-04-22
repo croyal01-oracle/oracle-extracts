@@ -1,0 +1,46 @@
+--AUTO ACCOUNTING RULES FOR LABOR COST ACCOUNT FOR "ALL" PROJECT TYPES
+--
+--EXPENDITURE ITEM ID FINDS:
+--
+select exp.task_id, t.service_type_code, p.project_type
+from pa.pa_expenditure_items_all exp,
+pa.pa_projects_all p,
+pa.pa_tasks t
+where expenditure_item_id = &exp_item_id
+and p.project_id = t.project_id
+and t.task_id = exp.task_id
+--
+--REPORTING ENTITY
+--
+SELECT cre.reporting_entity
+FROM xwf.xwf_cost_reporting_entity cre, pa.pa_tasks pt
+WHERE pt.carrying_out_organization_id = cre.organization_id
+AND pt.task_id = &task_id
+--
+--PRODUCT
+--
+SELECT segment_value
+FROM pa.pa_segment_value_lookups
+WHERE segment_value_lookup = '&project_type'
+AND segment_value_lookup_set_id = 3
+--
+--COST CENTER
+--
+SELECT decode ('&task_service_type','DEPR RESERVE KY - ELECT','0000',
+  		 'DEPR RESERVE IN - ELECT','0000',
+  		 'DEPR RESERVE - GAS','0000',
+ 		 'DEPR RESERVE - COMMON','0000', 
+  		 decode ('&proj_type','BALANCE SHEET','0000',
+                 haou.attribute1)) 		
+FROM hr.hr_all_organization_units haou, pa.pa_tasks pt 
+WHERE pt.carrying_out_organization_id = haou.organization_id
+AND pt.task_id = &task_id
+--
+--ACCOUNT
+--
+SELECT segment_value
+FROM pa.pa_segment_value_lookups
+WHERE segment_value_lookup = '&task_service_type'
+AND segment_value_lookup_set_id = 1
+--
+/

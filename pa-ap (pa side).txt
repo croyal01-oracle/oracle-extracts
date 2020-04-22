@@ -1,0 +1,40 @@
+PAYABLES-RELATED TRANSACTIONS IN PROJECTS BY COMPANY AND BATCH NAME:
+
+
+select substr(glcc.segment1,1,8) COMPANY
+     , substr(eia.system_linkage_function,1,17) INVOICE_TYPE
+     , substr(cdl.batch_name,1,25) BATCH_NAME
+     , count(*)
+     , sum(cdl.burdened_cost) AMOUNT
+from pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+     , gl.gl_code_combinations glcc
+where gl_date between '01-JAN-01' and '31-JAN-01'
+     and eia.system_linkage_function in
+         ('VI', 'ER')
+     and cdl.transfer_status_code in ('T', 'V', 'A')
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+group by glcc.segment1
+     , eia.system_linkage_function
+     , cdl.batch_name
+order by glcc.segment1
+     , eia.system_linkage_function
+     , cdl.batch_name
+
+
+TOTALS OF AP TRANSACTIONS BY SYSTEM LINKAGE:
+
+select substr(eia.system_linkage_function,1,17) INVOICE_TYPE
+     , count(*)       
+     , sum(cdl.burdened_cost) AMOUNT
+from pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+     , gl.gl_code_combinations glcc
+where gl_date between '01-JAN-01' and '31-JAN-01'
+     and eia.system_linkage_function in
+         ('VI', 'ER')
+     and cdl.transfer_status_code in ('T', 'V', 'A')
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+group by eia.system_linkage_function

@@ -1,0 +1,60 @@
+FIND BATCH NAME OF TRANSACTIONS IN PROJECTS BY SYS_LINK, COMPANY
+
+
+select 
+     cdl.batch_name
+     , cdl.transfer_status_code STATUS
+     , sum(cdl.amount) AMOUNT
+from 
+     gl.gl_code_combinations glcc
+     , pa.pa_expenditure_items_all eia
+     , pa.pa_cost_distribution_lines_all cdl
+where 
+     cdl.gl_date between '&beg_gl_date_range' and '&beg_gl_date_range'
+     and cdl.transfer_status_code = '&transfer_status_code'
+--A - Accepted by other application
+--G - Generated CDL, but will not be transferred
+--P - Pending transfer
+--V - Received from other application (only on VI)
+--R - Rejected by other application
+--X - Rejected in transfer to other application
+--T - Transferred to other application
+     and eia.system_linkage_function = '&sys_link'
+--ST
+--USG
+--OT
+     and glcc.segment1 = '&company'
+     and eia.expenditure_item_id = cdl.expenditure_item_id
+     and cdl.dr_code_combination_id = glcc.code_combination_id
+group by 
+     cdl.batch_name
+     , cdl.transfer_status_code
+
+
+
+select batch_name,
+     sum(amount) AMOUNT
+from pa.pa_expenditure_items_all a,
+     pa.pa_tasks b,
+     pa.pa_projects_all c,
+     pa.pa_cost_distribution_lines_all d,
+     gl.gl_code_combinations e
+where d.gl_date between '&beg_gl_date_range' and '&beg_gl_date_range'
+     and d.transfer_status_code = '&transfer_status_code'
+--A - Accepted by other application
+--G - Generated CDL, but will not be transferred
+--P - Pending transfer
+--V - Received from other application (only on VI)
+--R - Rejected by other application
+--X - Rejected in transfer to other application
+--T - Transferred to other application
+     and system_linkage_function = '&sys_link'
+--ST
+--USG
+--OT
+     and e.segment1 = '&company'
+     and a.task_id = b.task_id
+     and b.project_id = c.project_id
+     and a.expenditure_item_id = d.expenditure_item_id
+     and d.dr_code_combination_id = e.code_combination_id
+group by batch_name

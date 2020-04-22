@@ -1,0 +1,32 @@
+LOOKS AT THE "MISSING COST RATE" DISTRIBUTION ERRORS FOR TRANSACTIONS AFTER A CERTAIN
+DATE THAT ARE NOT "Labor Recording" EXPENDITURE TYPES.  THESE ARE GIVEN TO PAYROLL TO
+DETERMINE HOW TO FIX (IF APPROPRIATE).
+
+select hap.full_name, eia.expenditure_type, eia.expenditure_item_date, eia.quantity, ea.expenditure_group
+from pa.pa_expenditure_items_all eia
+	, pa.pa_expenditures_all ea
+	, hr.per_all_people_f hap
+where eia.cost_dist_rejection_code = 'NO_RATE'
+and eia.expenditure_type != 'Labor Recording'
+and eia.expenditure_item_date > '24-DEC-00'
+and ea.incurred_by_person_id = hap.person_id
+and eia.expenditure_id = ea.expenditure_id
+order by hap.full_name
+
+
+THE SECOND QUERY GETS A COUNT FOR THE NUMBER OF RECORDS GETTING THIS ERROR THAT 
+NEED TO BE RESET TO 0.
+
+select count(*)
+from pa.pa_expenditure_items_all
+where cost_dist_rejection_code = 'NO_RATE'
+and raw_cost is null
+
+
+THE THIRD QUERY IS WHAT IS EMAILED TO THE DBA TO RUN -- 
+LET HIM KNOW HOW MANY RECORDS WILL BE AFFECTED (FROM THE ABOVE QUERY).
+
+update pa.pa_expenditure_items_all
+set raw_cost = 0
+where cost_dist_rejection_code = 'NO_RATE'
+and raw_cost is null

@@ -1,0 +1,21 @@
+FIND PROJECTS DETAILS (PROJ, TASK, EXP BATCH, DATE, EXP TYPE) FOR INVALID CCIDS IN GL:
+
+select p.segment1, 
+	t.task_number, 
+	ea.expenditure_group, 
+	eia.expenditure_item_date, 
+	eia.expenditure_type,
+	cdl.amount
+from pa.pa_projects_all p,
+	pa.pa_tasks t,
+	pa.pa_expenditures_all ea,
+	pa.pa_expenditure_items_all eia,
+	pa.pa_cost_distribution_lines_all cdl
+where cdl.gl_date between '01-JAN-01' and '31-JAN-01'
+     and cdl.transfer_status_code||'' = 'A'
+     and eia.system_linkage_function in ('ST', 'OT')
+     and cdl.dr_code_combination_id = 20992
+     and p.project_id = t.project_id
+     and t.task_id = eia.task_id
+     and ea.expenditure_id = eia.expenditure_id
+     and cdl.expenditure_item_id = eia.expenditure_item_id

@@ -1,0 +1,20 @@
+PA TRANSACTION INTERFACE TABLE BY BATCH, REJECTION, EXP TYPE
+
+select 
+     count(*) RECORDS_IN_BATCH
+     , batch_name EXP_BATCH
+     , substr(transaction_status_code,1,6) STATUS
+     , substr(transaction_rejection_code,1,20) REJ_REASON
+     , substr(expenditure_type,1,20) EXPENDITURE_TYPE
+     , sum(raw_cost) RAW_COST
+from 
+     pa.pa_transaction_interface_all
+group by 
+     batch_name
+     , transaction_rejection_code
+     , transaction_status_code
+     , expenditure_type
+order by batch_name
+     , transaction_rejection_code
+     , transaction_status_code
+     , expenditure_type

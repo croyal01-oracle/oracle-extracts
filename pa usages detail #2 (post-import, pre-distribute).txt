@@ -1,0 +1,17 @@
+PA EXPENDITURE ITEMS ALL TABLE BY BATCH, END DATE, STATUS
+
+select count(*),
+     ea.expenditure_group EXP_BATCH,
+     eia.expenditure_item_date EXP_ITEM_DATE,
+     sum(eia.raw_cost) RAW_COST,
+     substr(ea.expenditure_status_code,1,10) STATUS,
+     substr(eia.cost_dist_rejection_code,1,15) REJECT_REASON
+from pa.pa_expenditure_items_all eia,
+     pa.pa_expenditures_all ea
+where eia.cost_distributed_flag = 'N'
+     and eia.system_linkage_function = 'USG'
+     and eia.expenditure_id = ea.expenditure_id
+group by ea.expenditure_group,
+     eia.expenditure_item_date,
+     ea.expenditure_status_code,
+     eia.cost_dist_rejection_code

@@ -1,0 +1,52 @@
+FIND REFERENCE_1 OF PROJECT-RELATED TRANSACTIONS IN GL BY SOURCE, CATEGORY, COMPANY:
+
+select d.reference_1,
+     NVL(sum(entered_dr),0) DEBIT,
+     NVL(sum(entered_cr),0) CREDIT,
+     NVL(sum(entered_dr),0) -
+     NVL(sum(entered_cr),0) NET_AMOUNT
+from gl.gl_je_headers a,
+     gl.gl_je_lines b,
+     gl.gl_code_combinations c,
+     gl.gl_import_references d
+where currency_code = 'USD'
+     and a.status = 'P'
+     and a.period_name = '&period_name'
+     and segment4 != '1223300'
+     and segment1 = '&company'
+     and je_source = '&source'
+--Project Accounting
+     and je_category = '&category'
+--Labor Cost
+--Usage Cost
+     and a.je_header_id = b.je_header_id
+     and b.code_combination_id = c.code_combination_id
+     and d.je_header_id = a.je_header_id
+group by d.reference_1
+
+
+FIND JE BATCH NAME OF PROJECT-RELATED TRANSACTIONS IN GL BY SOURCE, CATEGORY, COMPANY:
+
+select d.name,
+     NVL(sum(entered_dr),0) DEBIT,
+     NVL(sum(entered_cr),0) CREDIT,
+     NVL(sum(entered_dr),0) -
+     NVL(sum(entered_cr),0) NET_AMOUNT
+from gl.gl_je_headers a,
+     gl.gl_je_lines b,
+     gl.gl_code_combinations c,
+     gl.gl_je_batches d
+where currency_code = 'USD'
+     and a.status = 'P'
+     and a.period_name = '&period_name'
+     and segment4 != '1223300'
+     and segment1 = '&company'
+     and je_source = '&source'
+--Project Accounting
+     and je_category = '&category'
+--Labor Cost
+--Usage Cost
+     and a.je_header_id = b.je_header_id
+     and b.code_combination_id = c.code_combination_id
+     and a.je_batch_id = d.je_batch_id
+group by d.name

@@ -1,0 +1,21 @@
+TRANSACTIONS IN PROJECTS BY SYSTEM LINKAGE AND COMPANY:
+
+select substr(system_linkage_function,1,14) SYS_LINK,
+     count(*),
+     substr(e.segment1,1,8) COMPANY,
+     sum(amount) AMOUNT
+from pa.pa_expenditure_items_all a,
+     pa.pa_tasks b,
+     pa.pa_projects_all c,
+     pa.pa_cost_distribution_lines_all d,
+     gl.gl_code_combinations e
+where gl_date between '01-JAN-01' and '31-JAN-01'
+     and d.transfer_status_code in ('A', 'T', 'V')
+     and a.task_id = b.task_id
+     and b.project_id = c.project_id
+     and a.expenditure_item_id = d.expenditure_item_id
+     and d.dr_code_combination_id = e.code_combination_id
+group by system_linkage_function,
+     e.segment1
+order by system_linkage_function,
+     e.segment1
